@@ -69,7 +69,7 @@ while run == True:
             if event.key == pygame.K_s:
                 push_abajo = False
         
-        
+        #cambio desde laptop
         
         
     pygame.display.update()
