@@ -12,13 +12,17 @@ pygame.init()
 ventana = pygame.display.set_mode((constantes.ANCHO_VENTANA, constantes.ALTO_VENTANA))
 pygame.display.set_caption("Frogger in python")
 
+player_image = pygame.image.load("assets/froggy/up.png")
+player_image = pygame.transform.scale(player_image, (player_image.get_width()*constantes.SCALA_PERSONAJE,
+                                                     player_image.get_height()*constantes.SCALA_PERSONAJE))
+
 #definir variables de movimiento del jugador
 push_arriba = False
 push_abajo = False
 push_izquieda = False
 push_derecha = False
 #Aparicion y ubicacion del jugador
-jugador = Personaje(400, 550)
+jugador = Personaje(400, 550, player_image)
 #Establecer un reloj para controlar los FPS
 reloj = pygame.time.Clock()
 
