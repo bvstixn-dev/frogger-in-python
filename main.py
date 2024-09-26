@@ -2,12 +2,14 @@ import pygame
 import constantes
 
 from personajes import Personaje
+
+
+#iniciar pygame
 pygame.init()
 
-jugador = Personaje(400, 550)
 
+#Configuracion de la ventana
 ventana = pygame.display.set_mode((constantes.ANCHO_VENTANA, constantes.ALTO_VENTANA))
-
 pygame.display.set_caption("Frogger in python")
 
 #definir variables de movimiento del jugador
@@ -15,12 +17,12 @@ push_arriba = False
 push_abajo = False
 push_izquieda = False
 push_derecha = False
-
-#controlar fps
+#Aparicion y ubicacion del jugador
+jugador = Personaje(400, 550)
+#Establecer un reloj para controlar los FPS
 reloj = pygame.time.Clock()
 
-#
-
+#Bucle del juego
 run = True
 while run == True:
     ventana.fill(constantes.COLOR_BG)
@@ -38,7 +40,10 @@ while run == True:
         delta_y = -constantes.VELOCIDAD
     if push_abajo == True:
         delta_y = constantes.VELOCIDAD
+    
+    #verificar ubicacion
     print(delta_x, delta_y)
+    
     #mover al jugador
     jugador.movimiento(delta_x, delta_y)    
     
@@ -58,7 +63,7 @@ while run == True:
                 push_arriba = True
             if event.key == pygame.K_s:
                 push_abajo = True
-            #Soltar tecla
+        #Soltar tecla
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
                 push_izquieda = False
@@ -69,9 +74,7 @@ while run == True:
             if event.key == pygame.K_s:
                 push_abajo = False
         
-        #cambio desde laptop
-        
-        
+    #Actualizar eventos
     pygame.display.update()
 
 
