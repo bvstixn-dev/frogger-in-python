@@ -19,7 +19,7 @@ push_derecha = False
 #controlar fps
 reloj = pygame.time.Clock()
 
-
+#
 
 run = True
 while run == True:
