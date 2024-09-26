@@ -7,4 +7,4 @@ class Personaje():
     
     
     def dibujar(self, ventana):
-        pygame.draw.rect(ventana, (0, 128, 0), self.shape)
+        pygame.draw.rect(ventana, constantes.COLOR_PERSONAJE, self.shape)
