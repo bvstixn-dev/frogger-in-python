@@ -5,7 +5,9 @@ class Personaje():
         self.flip_x = False
         self.flip_y = False
         self.image = image
-        self.shape = pygame.Rect(0, 0, constantes.ANCHO_PERSONAJE, constantes.ALTO_PERSONAJE)
+        self.shape = self.image.get_rect()
+        #Tamano de rectangulo
+        #self.shape = pygame.Rect(0, 0, constantes.ANCHO_PERSONAJE, constantes.ALTO_PERSONAJE)
         self.shape.center = (x, y)
     def movimiento(self, delta_x, delta_y):
         #movimiento flip
@@ -25,6 +27,4 @@ class Personaje():
         imagen_flip = pygame.transform.flip(self.image, self.flip_x, self.flip_y)
         ventana.blit(imagen_flip, self.shape)
         #pygame.draw.rect(ventana, constantes.COLOR_PERSONAJE, self.shape)
-        
-    
     

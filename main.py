@@ -12,6 +12,13 @@ pygame.init()
 ventana = pygame.display.set_mode((constantes.ANCHO_VENTANA, constantes.ALTO_VENTANA))
 pygame.display.set_caption("Frogger in python")
 
+#sprites del juego
+
+#animaciones = []
+#for i in range (2):
+ #   print(i)
+
+
 player_image = pygame.image.load("assets/froggy/up.png")
 player_image = pygame.transform.scale(player_image, (player_image.get_width()*constantes.SCALA_PERSONAJE,
                                                      player_image.get_height()*constantes.SCALA_PERSONAJE))
@@ -25,7 +32,9 @@ push_derecha = False
 jugador = Personaje(400, 550, player_image)
 #Establecer un reloj para controlar los FPS
 reloj = pygame.time.Clock()
+#Obstaculo
 
+    
 #Bucle del juego
 run = True
 while run == True:
@@ -44,7 +53,16 @@ while run == True:
         delta_y = -constantes.VELOCIDAD
     if push_abajo == True:
         delta_y = constantes.VELOCIDAD
-    
+    """
+    if push_derecha:
+        delta_x = constantes.VELOCIDAD
+    elif push_izquieda:
+        delta_x = -constantes.VELOCIDAD
+    if push_arriba:
+        delta_y = -constantes.VELOCIDAD
+    elif push_abajo:
+        delta_y = constantes.VELOCIDAD
+    """
     #verificar ubicacion
     print(delta_x, delta_y)
     
@@ -54,19 +72,30 @@ while run == True:
     #dibujar personaje
     jugador.dibujar(ventana)
     
+    #comprobar colision
+    obstaculo = pygame.Rect(300, 300, constantes.ANCHO_OBTACULO, constantes.ALTO_OBTACULO)
+    pygame.draw.rect(ventana, (255, 0, 0), obstaculo)
+    if jugador.shape.colliderect(obstaculo):
+        print("!COLISION DETECTADA")
+    
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
         #controles
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
-                push_izquieda = True
+                #push_izquieda = True
+                jugador.movimiento(-constantes.TAMANO_BLOQUE, 0)
+                
             if event.key == pygame.K_d:
-                push_derecha = True
+                #push_derecha = True
+                jugador.movimiento(constantes.TAMANO_BLOQUE, 0)
             if event.key == pygame.K_w:
-                push_arriba = True
+                #push_arriba = True
+                jugador.movimiento(0, -constantes.TAMANO_BLOQUE)
             if event.key == pygame.K_s:
-                push_abajo = True
+                #push_abajo = True
+                jugador.movimiento(0, constantes.TAMANO_BLOQUE)
         #Soltar tecla
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
