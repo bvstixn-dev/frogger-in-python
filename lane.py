@@ -6,10 +6,10 @@ class Lane:
         Inicializamos una nueva instancia del carril(lane)
         -------------------------------------------------------------------
         Parametos:
-        pos (tuple): Posicion (x, y) del carril en la pantalla
-        group (pygame.sprite.Group): El grupo que pertenece al carril
-        speed (float): La velocidad de los obstaculos en el carril
-        lane_type (str): El tipo de carril ('street' o 'river')
+        - pos (tuple): Posicion (x, y) del carril en la pantalla
+        - group (pygame.sprite.Group): El grupo que pertenece al carril
+        - speed (float): La velocidad de los obstaculos en el carril
+        - lane_type (str): El tipo de carril ('street' o 'river')
         -------------------------------------------------------------------
         """
         

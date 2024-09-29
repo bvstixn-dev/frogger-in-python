@@ -7,11 +7,11 @@ class Obstacle(Object):
         Inicializa uhn obstaculo en el juego
         -------------------------------------------------------------------
         Parametros:
-        pos: Posicion del obstaculo en la pantalla (x, y)
-        size: Tamano del obstaculo (ancho, alto)
-        image: Ruta de imagen del obstaculo
-        group: Grupo de sprite al que pertenece el obstaculo
-        speed: Velocidad a la que se movera el obstaculo
+        - pos: Posicion del obstaculo en la pantalla (x, y)
+        - size: Tamano del obstaculo (ancho, alto)
+        - image: Ruta de imagen del obstaculo
+        - group: Grupo de sprite al que pertenece el obstaculo
+        - speed: Velocidad a la que se movera el obstaculo
         -------------------------------------------------------------------
         """
         super().__init__(pos, size, image, group)

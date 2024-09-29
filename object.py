@@ -7,10 +7,10 @@ class Object(pygame.sprite.Sprite):
         Inicializa un objeto en el juego como un sprite
         -------------------------------------------------------------------
         Parametros:
-        pos: Posicion incial del objeto en la pantalla (x, y)
-        size: Tamano del objeto (anchom alto)
-        image_directory: Ruta de la imagen
-        group: Grupo de sprites al que pertenece el objeto
+        - pos: Posicion incial del objeto en la pantalla (x, y)
+        - size: Tamano del objeto (anchom alto)
+        - image_directory: Ruta de la imagen
+        - group: Grupo de sprites al que pertenece el objeto
         -------------------------------------------------------------------
         """
         super().__init__(group) #Hereda la clase de Sprites de pygame y su atributo group para inicializar el sprite

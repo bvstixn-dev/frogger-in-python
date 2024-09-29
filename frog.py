@@ -8,12 +8,12 @@ class Frog(Object):
         Inicializa la rana en el juego
         -------------------------------------------------------------------
         Parametros:
-        pos: Posicion inicial de la rana (x, y)
-        size: Tamano de la rana (ancho, alto)
-        image_directory: Ruta de la imagen de la rana
-        group: Grupo de sprites a la que pertenece la rana
-        colission_group: Grupo de sprites con las que la rana puede colisionar
-        river_speed: Velocidades diferentes en el carril del rio
+        - pos: Posicion inicial de la rana (x, y)
+        - size: Tamano de la rana (ancho, alto)
+        - image_directory: Ruta de la imagen de la rana
+        - group: Grupo de sprites a la que pertenece la rana
+        - colission_group: Grupo de sprites con las que la rana puede colisionar
+        - river_speed: Velocidades diferentes en el carril del rio
         -------------------------------------------------------------------
         """
         super().__init__(pos, size, image_directory, group)
