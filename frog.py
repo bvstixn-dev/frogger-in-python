@@ -3,7 +3,7 @@ import pygame
 from object import *
 
 class Frog(Object):
-    def __init__(self, pos, size, image_directory, group, collision_groups, river_speeds):
+    def __init__(self, pos, size, image_directory, group, collision_groups, river_speeds, game):
         """
         Inicializa la rana en el juego
         -------------------------------------------------------------------
@@ -23,7 +23,8 @@ class Frog(Object):
         self.collision_groups = collision_groups #Grupos con los que puede colisionar
         self.river_speeds = river_speeds #Velocidades del rio
         self.x_speed = 0 #velocidad horizontal inicial
-    
+        self.game = game #Referencia al juego para manejar las vidas y el puntaje
+        
     def moveFrog(self):
         """
         Mueve la rana segun las teclas precionadas y actualiza su posicion
@@ -45,19 +46,32 @@ class Frog(Object):
         if pygame.K_LEFT in self.keyups:
             self.image_directory = "assets/froggy/left.png"
             x -= 48 #Movimiento hacia la izquierda
+            
        
         if pygame.K_RIGHT in self.keyups:
             self.image_directory = "assets/froggy/right.png"
             x += 48 #Movimiento hacia la derecha
         
         x += self.x_speed #Aplica la velocidad horizontal
+        #Comprobar si frogger llega a la parte superior de la pantalla
+        if y <= 48:
+            print("Test de si frog llego al objetivo")
+            self.game.increase_score(100) #Anadimos los puntos
+            self.reset_position()
         
         #Verifica los limites de la pantalla y mata a la rana si sale
-        if x <= -48 or x > 48*14 or y > 48*16:
+        """if x <= -48 or x > 48*14 or y > 48*16:
             self.killFrog()
-            return
+            return"""
         #Actualiza la posicion de la rana
+        
         self.pos = (x, y)
+    
+    def reset_position(self):
+        """Reinicia la posicion de la rana al inicio"""
+        self.pos = (336, 672)
+        self.x_speed = 0
+    
     
     def checkCollisions(self):
         """
@@ -90,14 +104,16 @@ class Frog(Object):
     def killFrog(self):
         """
         Resetea la rana a su posicion inicial y establece su imagen
-        """
+        
         self.x_speed = 0 #resetea la velocidad horizontal
         
         #restablece la posicion y la imagen de la rana
         self.pos = (336, 672)
         self.image_directory = "assets/froggy/up.png"
         self.setImage() #establece la imagen
-        
+        """
+        #Accion cuando muere la rana
+        self.game.lose_life()
     
     def update(self):
         self.setImage() #actualiza la imagen

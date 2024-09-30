@@ -1,0 +1,30 @@
+def play_video(video_path, screen):
+        #Reproduce el video y espera a que termine
+        video = imageio.get_reader(video_path)
+        clock = pygame.time.Clock()
+        
+        
+        for frame in video:
+            #Convierte el frame a un formato que pygame pueda usar
+            frame = np.array(frame)
+            frame = frame[..., [2, 1, 0]] #Cambia el orden de los colores de rgb a bgr
+            
+            
+            frame = np.rot90(frame, k=0)
+            frame_surface = pygame.surfarray.make_surface(frame)
+            frame_surface = pygame.transform.scale(frame_surface, screen.get_size())
+            
+            
+            
+            #Muestra el frame en la pantalla
+            screen.blit(frame_surface, (0, 0))
+            pygame.display.flip()
+            
+            #Espera un corto el periodo para mantener la velocidad del video
+            clock.tick(video.get_meta_data()['fps'])
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+        
