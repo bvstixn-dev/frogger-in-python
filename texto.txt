@@ -1,0 +1,532 @@
+main.py
+class Game:
+    def __init__(self, screen_dimensions, screen_caption, screen_color):
+        """
+        Inicializamos nuesta configuracion de frogger, configura las dimensiones de la pantalla, el titulo de la ventana y los grupos de sprites
+        -------------------------------------------------------------------
+        Parametros:
+        - screen_dimensions: ancho y alto de la ventana del juego(pixeles)
+        - screen_caption: titulo de la ventana del juego
+        - screen_color: color de fondo de la pantalla (RGB)
+        -------------------------------------------------------------------
+        """
+        pygame.mixer.init() #Iniciamos el modulo o motor de sonido
+        pygame.init()
+        pygame.display.set_mode(screen_dimensions)
+        pygame.display.set_caption(screen_caption)
+        
+        
+        self.screen_color = screen_color
+        self.DISPLAY = pygame.display.get_surface() #Superficie donde se dibujara el juego
+        
+        
+        #Grupos de sprites (objetos)
+        self.object_group = pygame.sprite.Group()
+        self.car_group = pygame.sprite.Group()
+        self.river_group = pygame.sprite.Group()
+        self.frog_group = pygame.sprite.Group()
+        
+        #Cargar sonidos
+        
+        
+        #Almacena todos los grupos de sprites para actualizarlos y dibujarlos
+        self.all_group = [self.object_group, self.car_group, self.river_group, self.frog_group]
+        
+        #Diccionario para almacenar las velocidades de las lineas del rio
+        self.river_speeds = {}
+
+        #iconos
+        self.lives_icon = pygame.image.load("assets/froggy/icon.png")  # Cargar imagen de la vida (48x48)
+        self.lives_icon = pygame.transform.scale(self.lives_icon, (32, 32))  # Redimensionar la imagen
+        
+        #Tiempo
+        self.time_limit = 60 #limite x seg
+        self.time_left = self.time_limit #tiempo restante
+        self.start_time = pygame.time.get_ticks() # inicio del cronometro
+        
+        
+        #Iniciarlizar vidas y puntaje
+        self.lives = 3
+        self.score = 0
+        self.high_score = 0
+        self.font = pygame.font.Font("assets/fonts/PressStart2P.ttf")
+        
+        self.load_sounds()
+        #Configuracion inicial de los objetos del juego
+        self.assetSetup()
+    
+    def display_timer(self):
+        """"Muestra la barra de tiempo en la pantalla"""
+        time_ratio = self.time_left / self.time_limit
+        timer_width = int(600 * time_ratio)
+
+        # Posición de la barra: inferior derecha
+        x_pos = self.DISPLAY.get_width() - 210  # Ancho de la barra + margen
+        y_pos = self.DISPLAY.get_height() - 50  # Altura de la barra
+
+        # Crear superficie de fondo de la barra
+        timer_background = pygame.Surface((200, 20))  # Fondo de la barra
+        timer_background.fill((255, 0, 0))  # Color rojo
+
+        # Crear superficie para la barra de tiempo
+        timer_surface = pygame.Surface((timer_width, 20))  # Barra de tiempo
+        timer_surface.fill((0, 255, 0))  # Color verde
+
+        # Mostrar las superficies
+        self.DISPLAY.blit(timer_background, (x_pos, y_pos))  # Fondo de la barra
+        self.DISPLAY.blit(timer_surface, (x_pos, y_pos))  # Barra de tiempo
+            
+    def update_timer(self):
+        """Actualiza el temporizador y verifica se se ha agota"""
+        current_time = pygame.time.get_ticks()
+        elapsed_time = (current_time - self.start_time) / 1000  # Tiempo en seg
+        self.time_left = self.time_limit - elapsed_time
+        
+        
+        print(f"Time left: {self.time_left}")  # Verifica el tiempo restante
+        
+        
+        if self.time_left <= 0:
+            self.lose_life()
+            self.reset_timer()
+        
+    def reset_timer(self):
+        """Reinicia el temporizador"""
+        self.time_left = self.time_limit
+        self.start_time = pygame.time.get_ticks()
+        
+                
+    def show_start_game(self):
+        """Muestra el texto 'start game' antes de iniciar el juego"""
+        start_surface = self.font.render('Start Game', True, (255, 0, 0))
+        
+        self.DISPLAY.blit(start_surface, (self.DISPLAY.get_width() // 2 - start_surface.get_width() // 2, self.DISPLAY.get_height() // 2))
+        pygame.display.update()
+        pygame.time.delay(3000) # 3 seg
+    
+    def load_sounds(self):
+        """Carga la musica"""
+        pygame.mixer.music.load("assets/music/sounds/MainTheme.ogg")
+        pygame.mixer.music.play(-1)
+        
+        self.hop_sound = pygame.mixer.Sound("assets/music/sounds/Hop.ogg")
+        self.drown_sound = pygame.mixer.Sound("assets/music/sounds/Drown.ogg")
+        self.die_land_sound = pygame.mixer.Sound("assets/music/sounds/Die-on-Land.ogg")
+    
+    def assetSetup(self):
+        """
+        Configura los objectos iniciales, incluyendo el fondo, el pasto y los autos
+        """
+        
+        #Fondo/Background
+        Object((0,0), (672, 768), "assets/background.png", self.object_group)
+        
+        
+        #Pasto/grass zonas donde la rana esta segura
+        for x in range(14):
+            Object((x*48, 384), (48, 48), "assets/grass/purple.png", self.object_group)
+            Object((x*48, 672), (48, 48), "assets/grass/purple.png", self.object_group)
+        
+        #Pasto/grass ubicado en el area superior
+        #for x in range(28):
+            #Object((x*24, 72), (24, 72), "assets/grass/green.png", self.object_group)
+            
+        #Valocidades aleatorias para los autos y rio
+        speeds = [-2.25, -2, -1.75, -1.5, -1.25, 1.25, 1.5, 1.75, 2, 2.25]
+        random.shuffle(speeds)
+        
+        #Carriles del rio
+        for y in range(5):
+            y_pos = y*48 + 144
+            new_lane = Lane((0, y_pos), self.river_group, speeds.pop(), "river")
+            self.river_speeds[y_pos // 48] = new_lane.speed
+            #possible error
+        
+        #Carriles de la calle
+        for y in range(5):
+            y_pos = y*48 + 432
+            Lane((0, y_pos), self.car_group, speeds.pop(), "street")
+        
+        #Inicializamos la rana frogger(posicion inicial(2 argumentos), su tamano, su imagen, su agrupacion de sprites y colisiones)
+        self.frog = Frog((336, 672), (48, 48), "assets/froggy/up.png", self.frog_group, [self.car_group, self.river_group], self.river_speeds, self)
+    
+    def displayHUD(self):
+        """
+        Muestra las vidas, el puntaje y el maximo en la pantalla"""
+        for i in range(self.lives):
+            self.DISPLAY.blit(self.lives_icon, (10 + i * 40, 730))  # Dibuja iconos de vida
+        #print(f"Current score: {self.score}, High score: {self.high_score}") # Verificamos puntaje
+        lives_surface = self.font.render(f"Vidas: {self.lives}", True, (255, 255, 255))
+        score_surface = self.font.render(f"Score: {self.score}", True, (255, 255, 255))
+        high_score_surface = self.font.render(f"High Score: {self.high_score}", True, (255, 255, 255))
+        
+        
+        self.DISPLAY.blit(lives_surface, (10, 10))
+        self.DISPLAY.blit(score_surface, (150,10))
+        self.DISPLAY.blit(high_score_surface, (450, 10))
+    def run(self):
+        """Bucle principal del juego, maneja los eventos de entrada, actualiza los objetos y refresca la pantalla"""
+        self.DISPLAY.fill((0, 0, 0))
+        self.show_start_game() # mostrar texto al iniciar el juego
+
+        while True:
+            #Rellena la pantalla con el color de fondo
+            self.DISPLAY.fill(self.screen_color)
+            
+            #Movimiento de la rana segun la tecla presionada
+            self.frog.keyups = []
+            
+            self.update_timer()
+            self.display_timer()
+
+
+            #Manejo de eventos (cerrar ventana, teclas presionadas)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.KEYUP:
+                    self.frog.keyups.append(event.key) # Almacena las teclas que se sueltan
+            
+            #Actualiza y dibuja todos los grupos de sprites
+            for group in self.all_group:
+                for sprite in group:
+                    sprite.update()
+                group.draw(self.DISPLAY)
+            
+            #Mostrar HUD
+            self.displayHUD()
+            
+            #Refresa la pantalla con nuevos dibujos
+            pygame.display.update()
+            
+    
+    def lose_life(self):
+        """Reduce las vidas y reinicia la posicion de la rana"""
+        self.lives -= 1
+        print(f"Lives left: {self.lives}")
+        if self.lives == 0:
+            self.game_over()
+        else:
+            self.frog.reset_position()
+            self.reset_timer()
+            print("Froggy vuelve a su posicion original")
+            
+    def increase_score(self, points):
+        """Aumenta el puntaje del jugador"""
+        print("Test de incremento de score...")
+        self.score += points
+        print(f"Score: {self.score}")
+        if self.score > self.high_score:
+            self.high_score = self.score
+            
+    def game_over(self):
+        """Termina el juego y reinicia los valores """
+        print("Game over")
+        self.display_game_over_message()
+        pygame.time.wait(3000) # 3 seg
+        self.lives += 3
+        self.score = 0
+        self.frog.reset_position()
+        
+    def display_game_over_message(self):
+        """Muestra el mensaje 'game over' """
+        game_over_surface = self.font.render("Game Over", True, (255, 0, 0))
+        self.DISPLAY.blit(game_over_surface, (280, 350))
+        pygame.display.update()       
+
+if __name__ == "__main__":
+    #Creamos un objeto con todos los atributos (Dimension de la ventana, Titulo de la ventana y color)
+    pygame.init()
+    screen_dimensions = (672, 768)
+    screen_caption = "Frogger en python!"
+    screen_color = (0, 0, 0)
+    
+    #Configura la ventana
+    screen = pygame.display.set_mode(screen_dimensions)
+    pygame.display.set_caption(screen_caption)
+    
+    #Crea el menu y corre el juego
+    
+    menu = Menu.play_video_opencv("assets/video/test_intro.mp4", screen)
+    
+    #una vez finalizado el video, inicializa el juego
+    game = Game(screen_dimensions, screen_caption, screen_color)
+    
+    #llama al menu de opciones
+    menu = Menu(game.DISPLAY)
+    menu.run()
+    
+    #comienzo del juego
+    game.run()
+    lane.py
+from obstacle import *
+class Lane:
+    def __init__(self, pos, group, speed, lane_type):
+        """
+        Inicializamos una nueva instancia del carril(lane)
+        -------------------------------------------------------------------
+        Parametos:
+        - pos (tuple): Posicion (x, y) del carril en la pantalla
+        - group (pygame.sprite.Group): El grupo que pertenece al carril
+        - speed (float): La velocidad de los obstaculos en el carril
+        - lane_type (str): El tipo de carril ('street' o 'river')
+        -------------------------------------------------------------------
+        """
+        
+        self.pos = pos              #Posicion del carril
+        self.group = group          #Grupo de sprites el que anadira al carril
+        self.speed = speed          #Velocidad de movimiento de los obstaculos
+        self.lane_type = lane_type  #tipo de carril: 'street' | 'river'
+        
+        #configura los obstaculos del carril
+        self.setupObstacles()
+    
+    
+    def setupObstacles(self):
+        """
+        Configura los obstaculos en el carril dependiendo de su tipo('street' | 'river') y direccion('left' | 'right')
+        """
+        #determina la direccion del movimiento de los obstaculos
+        if self.speed > 0:
+            self.direction = "right"
+        else:
+            self.direction = "left"
+        
+        #Configura los obstaculos dependiendo del tipo de carril
+        if self.lane_type == "street":
+            # Selecciona una imagen del coche aleatorio
+            car = random.randint(1,2)
+            image_directory = f"assets/{self.lane_type}/{self.direction}/{car}.png"
+            
+            #Crea tres coches en posiciones fijas en el carril
+            Obstacle(self.pos, (48, 48), image_directory, self.group, self.speed).setImage()
+            Obstacle((self.pos[0] + 5*48, self.pos[1]), (48, 48), image_directory, self.group, self.speed).setImage()
+            Obstacle((self.pos[0] + 10*48, self.pos[1]), (48, 48), image_directory, self.group, self.speed).setImage()
+        #Si el carril es de tipo rio('river'), se crean tortugas y troncos
+        elif self.lane_type == "river":
+            if self.direction == "left":
+                #Define las imagenes para las tortugas segun la direccion
+                left, middle, right = f"assets/{self.lane_type}/{self.direction}/turtle.png", f"assets/{self.lane_type}/{self.direction}/turtle.png", f"assets/{self.lane_type}/{self.direction}/turtle.png"
+            #Selecciona imagenes del tronco segun la direccion
+            elif self.direction == "right":
+                left, middle, right = f"assets/{self.lane_type}/{self.direction}/left.png", f"assets/{self.lane_type}/{self.direction}/middle.png", f"assets/{self.lane_type}/{self.direction}/right.png"
+                
+            # Crea 3 tortugas o troncos en posiciones fijas en el carril
+            Obstacle(self.pos, (48, 48), left, self.group, self.speed).setImage()
+            Obstacle((self.pos[0] + 48, self.pos[1]), (48, 48), middle, self.group, self.speed).setImage()
+            Obstacle((self.pos[0] + 2*48, self.pos[1]), (48, 48), right, self.group, self.speed).setImage()
+            
+            #crea tres tortugas o troncos adicionales en el carril
+            Obstacle((self.pos[0] + 7*48, self.pos[1]), (48, 48), left, self.group, self.speed).setImage()
+            Obstacle((self.pos[0] + 8*48, self.pos[1]), (48, 48), middle, self.group, self.speed).setImage()
+            Obstacle((self.pos[0] + 9*48, self.pos[1]), (48, 48), right, self.group, self.speed).setImage()
+object.py
+
+class Object(pygame.sprite.Sprite):
+    def __init__(self, pos, size, image_directory, group):
+        """
+        Inicializa un objeto en el juego como un sprite
+        -------------------------------------------------------------------
+        Parametros:
+        - pos: Posicion incial del objeto en la pantalla (x, y)
+        - size: Tamano del objeto (anchom alto)
+        - image_directory: Ruta de la imagen
+        - group: Grupo de sprites al que pertenece el objeto
+        -------------------------------------------------------------------
+        """
+        super().__init__(group) #Hereda la clase de Sprites de pygame y su atributo group para inicializar el sprite
+        
+        self.pos = pos #Almacena la posicion del objeto
+        self.size = size #Almacena el tamano del objeto
+        self.image_directory = image_directory #Almacena la ruta de imagen
+        
+    def setImage(self):
+        """
+        Carga la imagen desde la ruta especificada, la escala del tamano del objeto y configura la superficie y el rectangulo del sprite
+        """
+        self.image = pygame.image.load(self.image_directory) #Carga la imagen
+        self.image = pygame.transform.scale(self.image, self.size) #Escala de la imagen
+        #Crea una superficie transparente para el objeto
+        self.surf = pygame.Surface(self.size).convert_alpha() 
+        self.surf.fill((0,0,0,0)) #LLena la superficie con transparencia
+        self.rect = self.surf.get_rect(topleft = self.pos) #Establece el rectangulo en la posicion incial
+        self.surf.blit(self.image, (0,0)) #Dibuja la imagen en la superficie
+        
+    def update(self):
+        """
+        Actualiza la imagen del objeto
+        se llama en cada cuadre para asegurarse que la imagen se muestre correctamente
+        """
+        self.setImage() #Llama a setImage() para actualizar la imagen
+obstacle.py
+
+class Obstacle(Object):
+    def __init__(self, pos, size, image, group, speed):
+        """
+        Inicializa uhn obstaculo en el juego
+        -------------------------------------------------------------------
+        Parametros:
+        - pos: Posicion del obstaculo en la pantalla (x, y)
+        - size: Tamano del obstaculo (ancho, alto)
+        - image: Ruta de imagen del obstaculo
+        - group: Grupo de sprite al que pertenece el obstaculo
+        - speed: Velocidad a la que se movera el obstaculo
+        -------------------------------------------------------------------
+        """
+        super().__init__(pos, size, image, group)
+        self.speed = speed
+    
+    
+    def moveObstacle(self):
+        """
+        Mueve el obstaculo en la direccion determinada por su velocidad. Si el obstaculo sale de la pantalla, 
+        se reposiciona en el lado opuesto
+        """
+        #Obtenemos la posicion actual del obstaculo
+        x = self.pos[0]
+        y = self.pos[1]
+        
+        #Actualiza la posicion horizontal del obstaculo 
+        x += self.speed
+        
+        #Determina si el obstaculo sale por la derecha, vuelve aparecer por la izquierda
+        if x >= 48*15: #Considerando que la pantalla es de 15 columnas de 48px
+            x = -48
+        #Determina si el obstaculo sale por la izquierda, vuelve aparecer por la derecha
+        if x <= 48 * -2: #Espacio adicional para el movimiento del obstaculo
+            x = 48 * 14 #Regresa al borde derecho de la pantalla
+        
+        #Actualizamos la posicion del obstaculo    
+        self.pos = (x, y)
+    
+    def update(self):
+        """
+        Actualiza la imagen del obstaculo y mueve el obstaculo en cada cuadro
+        """
+        self.setImage()
+        self.moveObstacle()
+frog.py
+class Frog(Object):
+    def __init__(self, pos, size, image_directory, group, collision_groups, river_speeds, game):
+        """
+        Inicializa la rana en el juego
+        -------------------------------------------------------------------
+        Parametros:
+        - pos: Posicion inicial de la rana (x, y)
+        - size: Tamano de la rana (ancho, alto)
+        - image_directory: Ruta de la imagen de la rana
+        - group: Grupo de sprites a la que pertenece la rana
+        - colission_group: Grupo de sprites con las que la rana puede colisionar
+        - river_speed: Velocidades diferentes en el carril del rio
+        -------------------------------------------------------------------
+        """
+        super().__init__(pos, size, image_directory, group)
+        
+        self.keyups = [] #Almacena las teclas que han sido soltadas
+        
+        self.collision_groups = collision_groups #Grupos con los que puede colisionar
+        self.river_speeds = river_speeds #Velocidades del rio
+        self.x_speed = 0 #velocidad horizontal inicial
+        self.game = game #Referencia al juego para manejar las vidas y el puntaje
+        
+    def moveFrog(self):
+        """
+        Mueve la rana segun las teclas precionadas y actualiza su posicion
+        Si la pantalla sale de la pantalla, llama a la funcion killFrog().
+        """
+        x = self.pos[0]
+        y = self.pos[1]
+        
+        #Controles de movimiento
+        if pygame.K_UP in self.keyups:
+            self.image_directory = "assets/froggy/up.png"
+            y -= 48 #Mueve hacia arriba
+            pygame.mixer.Sound.play(self.game.hop_sound)
+        
+        if pygame.K_DOWN in self.keyups:
+            self.image_directory = "assets/froggy/down.png"
+            y += 48 #Mueve hacia abajo
+            pygame.mixer.Sound.play(self.game.hop_sound)
+            
+        
+        if pygame.K_LEFT in self.keyups:
+            self.image_directory = "assets/froggy/left.png"
+            x -= 48 #Movimiento hacia la izquierda
+            pygame.mixer.Sound.play(self.game.hop_sound)
+            
+       
+        if pygame.K_RIGHT in self.keyups:
+            self.image_directory = "assets/froggy/right.png"
+            x += 48 #Movimiento hacia la derecha
+            pygame.mixer.Sound.play(self.game.hop_sound)
+        
+        x += self.x_speed #Aplica la velocidad horizontal
+        #Comprobar si frogger llega a la parte superior de la pantalla
+        if y < 120:
+            print("Test de si frog llego al objetivo")
+            self.game.increase_score(100) #Anadimos los puntos
+            self.reset_position()
+        
+        #Verifica los limites de la pantalla y mata a la rana si sale
+        """if x <= -48 or x > 48*14 or y > 48*16:
+            self.killFrog()
+            return"""
+        #Actualiza la posicion de la rana
+        
+        self.pos = (x, y)
+    
+    def reset_position(self):
+        """Reinicia la posicion de la rana al inicio"""
+        self.pos = (336, 672)
+        self.x_speed = 0
+    
+    
+    def checkCollisions(self):
+        """
+        Verifica si la rana ha colisionado con algun obstaculo.
+        Si hay una colision y la rana esta en un carril del rio, se aplica la velocidad del rio,
+        y en caso contrario, se llama a la funcion killFrog()
+        """
+        
+        self.setImage() #Establece la imagen actual de la rana
+        
+        #Variable de colision
+        collided = False
+        for sprite_group in self.collision_groups:
+            if pygame.sprite.spritecollideany(self, sprite_group):
+                collided = True #Detecta la colision
+        
+        lane = self.pos[1] // 48 #Determina en que carril se encuentra la rana
+        if collided:
+            if lane < 8: #Si esta en una lane de rio
+                self.x_speed = self.river_speeds[lane] #Establece la velocidad del rio
+            else:
+                self.killFrog() #Mata a la rana si esta en la calle
+                pygame.mixer.Sound.play(self.game.die_land_sound)
+        else:
+            self.x_speed = 0 #Resetea la velocidad horizontal
+            if lane < 8: #Si esta en una lane de rio pero no hay colision entonces mata a la rana
+                self.killFrog()
+                pygame.mixer.Sound.play(self.game.die_land_sound)
+                
+    
+    
+    def killFrog(self):
+        """
+        Resetea la rana a su posicion inicial y establece su imagen
+        
+        self.x_speed = 0 #resetea la velocidad horizontal
+        
+        #restablece la posicion y la imagen de la rana
+        self.pos = (336, 672)
+        self.image_directory = "assets/froggy/up.png"
+        self.setImage() #establece la imagen
+        """
+        #Accion cuando muere la rana
+        self.game.lose_life()
+    
+    def update(self):
+        self.setImage() #actualiza la imagen
+        self.moveFrog() #Mueve a la rana
+        self.checkCollisions() #Verifica colisiones
