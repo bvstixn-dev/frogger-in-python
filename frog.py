@@ -1,6 +1,7 @@
 import pygame
 
 from object import *
+from safe_zone import *
 
 class Frog(Object):
     def __init__(self, pos, size, image_directory, group, collision_groups, river_speeds, game):
@@ -24,6 +25,13 @@ class Frog(Object):
         self.river_speeds = river_speeds #Velocidades del rio
         self.x_speed = 0 #velocidad horizontal inicial
         self.game = game #Referencia al juego para manejar las vidas y el puntaje
+        self.image = pygame.image.load(image_directory)
+        self.image = pygame.transform.scale(self.image, size)  # Escala la imagen al tamaño especificado
+        self.rect = self.image.get_rect(topleft=pos)
+        
+        
+        
+        
         
     def moveFrog(self):
         """
@@ -37,27 +45,32 @@ class Frog(Object):
         if pygame.K_UP in self.keyups:
             self.image_directory = "assets/froggy/up.png"
             y -= 48 #Mueve hacia arriba
+            pygame.mixer.Sound.play(self.game.hop_sound)
         
         if pygame.K_DOWN in self.keyups:
             self.image_directory = "assets/froggy/down.png"
             y += 48 #Mueve hacia abajo
+            pygame.mixer.Sound.play(self.game.hop_sound)
             
         
         if pygame.K_LEFT in self.keyups:
             self.image_directory = "assets/froggy/left.png"
             x -= 48 #Movimiento hacia la izquierda
+            pygame.mixer.Sound.play(self.game.hop_sound)
             
        
         if pygame.K_RIGHT in self.keyups:
             self.image_directory = "assets/froggy/right.png"
             x += 48 #Movimiento hacia la derecha
+            pygame.mixer.Sound.play(self.game.hop_sound)
         
         x += self.x_speed #Aplica la velocidad horizontal
         #Comprobar si frogger llega a la parte superior de la pantalla
-        if y <= 48:
+        if y < 120:
             print("Test de si frog llego al objetivo")
             self.game.increase_score(100) #Anadimos los puntos
             self.reset_position()
+            self.game.increase_live()
         
         #Verifica los limites de la pantalla y mata a la rana si sale
         """if x <= -48 or x > 48*14 or y > 48*16:
@@ -82,6 +95,13 @@ class Frog(Object):
         
         self.setImage() #Establece la imagen actual de la rana
         
+        for sprite in self.game.object_group:
+            if isinstance(sprite, SafeZone):
+                sprite.check_frog(self)
+                return #Si frogeger llega al hueco, no necesita seguri verificando colisiones
+                
+        
+        
         #Variable de colision
         collided = False
         for sprite_group in self.collision_groups:
@@ -94,10 +114,12 @@ class Frog(Object):
                 self.x_speed = self.river_speeds[lane] #Establece la velocidad del rio
             else:
                 self.killFrog() #Mata a la rana si esta en la calle
+                pygame.mixer.Sound.play(self.game.die_land_sound)
         else:
             self.x_speed = 0 #Resetea la velocidad horizontal
             if lane < 8: #Si esta en una lane de rio pero no hay colision entonces mata a la rana
                 self.killFrog()
+                pygame.mixer.Sound.play(self.game.die_land_sound)
                 
     
     
