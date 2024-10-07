@@ -66,11 +66,12 @@ class Frog(Object):
         
         x += self.x_speed #Aplica la velocidad horizontal
         #Comprobar si frogger llega a la parte superior de la pantalla
-        if y < 120:
+        if y < 130:
             print("Test de si frog llego al objetivo")
             self.game.increase_score(100) #Anadimos los puntos
             self.reset_position()
             self.game.increase_live()
+            
         
         #Verifica los limites de la pantalla y mata a la rana si sale
         """if x <= -48 or x > 48*14 or y > 48*16:

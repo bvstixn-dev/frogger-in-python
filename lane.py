@@ -60,3 +60,4 @@ class Lane:
             Obstacle((self.pos[0] + 7*48, self.pos[1]), (48, 48), left, self.group, self.speed).setImage()
             Obstacle((self.pos[0] + 8*48, self.pos[1]), (48, 48), middle, self.group, self.speed).setImage()
             Obstacle((self.pos[0] + 9*48, self.pos[1]), (48, 48), right, self.group, self.speed).setImage()
+            
