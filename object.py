@@ -2,13 +2,13 @@ import pygame
 
 
 class Object(pygame.sprite.Sprite):
-    def __init__(self, pos, size, image_directory, group):
+    def __init__(self, pos, size, image_directory, group=None):
         """
         Inicializa un objeto en el juego como un sprite
         -------------------------------------------------------------------
         Parametros:
         - pos: Posicion incial del objeto en la pantalla (x, y)
-        - size: Tamano del objeto (anchom alto)
+        - size: Tamano del objeto (ancho, alto)
         - image_directory: Ruta de la imagen
         - group: Grupo de sprites al que pertenece el objeto
         -------------------------------------------------------------------

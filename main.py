@@ -103,8 +103,40 @@ class Game:
         
         
         #Pasto/grass ubicado en el area superior
-        for x in range(28):
-            Object((x*24, 72), (24, 72), "assets/grass/green.png", self.object_group)
+        #for x in range(28):
+            #Object((x*24, 72), (24, 72), "assets/grass/green.png", self.object_group)
+        
+        #Test
+        #for x in range(14):
+        #Object((x*24, 72), (100, 72), "assets/grass/hueco.png", self.object_group)
+        
+        #Dibujo del pasto superior
+        
+        
+        Object((0, 72), (100, 72), "assets/grass/hueco.png", self.object_group) 
+        Object((100, 72), (24, 72), "assets/grass/green.png", self.object_group)
+        Object((124, 72), (24, 72), "assets/grass/green.png", self.object_group)
+        
+        Object((148, 72), (100, 72), "assets/grass/hueco.png", self.object_group)
+        Object((248, 72), (24, 72), "assets/grass/green.png", self.object_group)
+        Object((272, 72), (24, 72), "assets/grass/green.png", self.object_group)
+        
+        Object((296, 72), (100, 72), "assets/grass/hueco.png", self.object_group)
+        Object((396, 72), (24, 72), "assets/grass/green.png", self.object_group)
+        Object((420, 72), (24, 72), "assets/grass/green.png", self.object_group)
+        
+        Object((444, 72), (100, 72), "assets/grass/hueco.png", self.object_group)
+        Object((544, 72), (24, 72), "assets/grass/green.png", self.object_group)
+        Object((568, 72), (24, 72), "assets/grass/green.png", self.object_group)
+        
+        Object((592, 72), (80, 72), "assets/grass/hueco.png", self.object_group) 
+        
+        
+         
+        
+            #Object((x*24, 72), (24, 72), "assets/grass/green.png", self.object_group)
+        
+        
             
         #Valocidades aleatorias para los autos y rio
         speeds = [-2.25, -2, -1.75, -1.5, -1.25, 1.25, 1.5, 1.75, 2, 2.25]
@@ -126,40 +158,49 @@ class Game:
         #self.frog = Frog((336, 672), (48, 48), "assets/froggy/up.png", self.frog_group, [self.car_group, self.river_group], self.river_speeds, self)
         self.frog = Frog((336, 672), (48, 48), "assets/froggy/up.png", self.frog_group, [self.car_group, self.river_group], self.river_speeds, self)
     
-    def display_timer(self):
-        """"Muestra la barra de tiempo en la pantalla"""
-        time_ratio = self.time_left / self.time_limit
-        timer_width = int(300 * time_ratio) #Definimos el tiempo
+    
+    def draw_time_bar(self):
+        """Dibuja la barra de tiempo en la parte inferior de la pantalla, que se reduce con el tiempo."""
+        # Calcular el porcentaje del tiempo restante
+        time_ratio = max(0, self.time_left / self.time_limit)  # Aseguramos que nunca sea negativo
 
-        # Posición de la barra: inferior derecha
-        x_pos = self.DISPLAY.get_width() - 210  # Ancho de la barra + margen
-        y_pos = self.DISPLAY.get_height() - 50  # Altura de la barra
+        # Dimensiones de la barra de tiempo
+        total_width = 300  # Ancho total de la barra
+        height = 20  # Altura de la barra
+        current_width = int(total_width * time_ratio)  # Ancho de la barra basado en el tiempo restante
 
-        # Crear superficie de fondo de la barra
-        timer_background = pygame.Surface((200, 20))  # Fondo de la barra
-        timer_background.fill((255, 0, 0))  # Color rojo
+        # Posición de la barra (inferior de la pantalla)
+        x_pos = self.DISPLAY.get_width() - total_width - 10  # 10 px de margen desde la derecha
+        y_pos = self.DISPLAY.get_height() - height - 10  # 10 px de margen desde el fondo
 
-        # Crear superficie para la barra de tiempo
-        timer_surface = pygame.Surface((timer_width, 20))  # Barra de tiempo
-        timer_surface.fill((0, 255, 0))  # Color verde
+        # Dibujar el fondo de la barra (en rojo)
+        pygame.draw.rect(self.DISPLAY, (255, 0, 0), (x_pos, y_pos, total_width, height))
 
-        # Mostrar las superficies
-        self.DISPLAY.blit(timer_background, (x_pos, y_pos))  # Fondo de la barra
-        self.DISPLAY.blit(timer_surface, (x_pos, y_pos))  # Barra de tiempo
-            
+        # Dibujar la parte restante de la barra (en verde)
+        pygame.draw.rect(self.DISPLAY, (0, 255, 0), (x_pos, y_pos, current_width, height))
+        
+        #Cargar y dibujar el icono
+        time_icon = pygame.image.load("assets/icons/time.png")
+        time_icon = pygame.transform.scale(time_icon, (50, 30))
+        
+        self.DISPLAY.blit(time_icon, (x_pos - 55, y_pos - 5))
+        
     def update_timer(self):
-        """Actualiza el temporizador y verifica se se ha agota"""
+        
+        """Actualiza el temporizador. Si el tiempo se agota, ejecuta las acciones correspondientes."""
+        # Calcular el tiempo transcurrido
         current_time = pygame.time.get_ticks()
-        elapsed_time = (current_time - self.start_time) / 1000  # Tiempo en seg
-        self.time_left = self.time_limit - elapsed_time
-        
-        
-        print(f"Time left: {self.time_left}")  # Verifica el tiempo restante
-        
-        
+        elapsed_time = (current_time - self.start_time) / 1000  # Convertir a segundos
+        self.time_left = self.time_limit - elapsed_time  # Calcular el tiempo restante
+
         if self.time_left <= 0:
-            self.lose_life()
-            self.reset_timer()
+            self.lose_life()  # Si el tiempo se acaba, perder una vida
+            self.reset_timer()  # Reiniciar el temporizador
+
+
+
+        
+        
         
     def reset_timer(self):
         """Reinicia el temporizador"""
@@ -173,7 +214,7 @@ class Game:
         
         self.DISPLAY.blit(start_surface, (self.DISPLAY.get_width() // 2 - start_surface.get_width() // 2, self.DISPLAY.get_height() // 2))
         pygame.display.update()
-        pygame.time.delay(3000) # 3 seg
+        pygame.time.delay(1500) # 1.5 seg
     
 
     def displayHUD(self):
@@ -242,8 +283,7 @@ class Game:
             #Movimiento de la rana segun la tecla presionada
             self.frog.keyups = []
             
-            self.update_timer()
-            self.display_timer()
+            
             
             #Manejo de eventos (cerrar ventana, teclas presionadas)
             for event in pygame.event.get():
@@ -263,7 +303,8 @@ class Game:
             
             #Mostrar HUD
             self.displayHUD()
-            
+            self.update_timer()
+            self.draw_time_bar()
             
             #Refresa la pantalla con nuevos dibujos
             pygame.display.update()
