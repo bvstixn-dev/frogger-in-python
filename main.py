@@ -2,7 +2,6 @@ import pygame, sys, random
 from object import *
 from frog import *
 from lane import *
-from safe_zone import *
 from menu import *
 
 
@@ -34,8 +33,6 @@ class Game:
         self.river_group = pygame.sprite.Group()
         self.frog_group = pygame.sprite.Group()
         
-        #Cargar sonidos
-        
         #Almacena todos los grupos de sprites para actualizarlos y dibujarlos
         self.all_group = [self.object_group, self.car_group, self.river_group, self.frog_group]
         
@@ -57,21 +54,63 @@ class Game:
         self.lives = 3
         self.score = 0
         self.high_score = 0
-        self.font = pygame.font.Font("assets/fonts/PressStart2P.ttf")
+        self.font = pygame.font.Font("assets/fonts/PressStart2P.ttf", 25)
         
+        #Cargamos el sonido
         self.load_sounds()
+        
         #Configuracion inicial de los objetos del juego
         self.assetSetup()
+        
+        #cordenada de los huecos
+        self.holes = [(24, 96),(172, 96),(320, 96),(468, 96),(606, 96)]
+        
+        
+        
+        
     
     def load_sounds(self):
         """Carga la musica"""
         pygame.mixer.music.load("assets/music/sounds/MainTheme.ogg")
-        pygame.mixer.music.play(-1)
+        pygame.mixer.music.play(-1) #La musica se repite en bucle
         
         self.hop_sound = pygame.mixer.Sound("assets/music/sounds/Hop.ogg")
         self.drown_sound = pygame.mixer.Sound("assets/music/sounds/Drown.ogg")
         self.die_land_sound = pygame.mixer.Sound("assets/music/sounds/Die-on-Land.ogg")
         self.success_sound = pygame.mixer.Sound("assets/music/sounds/credit.ogg")
+        self.fail_sound = pygame.mixer.Sound("assets/music/sounds/fail_sound.ogg")
+        
+    
+    
+    def check_if_in_hole(self):
+        "Checkea si la rana llego en un hueco, en ese caso, dibuja una rana en el hueco"
+        
+        frog_rect = self.frog.rect #cuadrado de la rana para la colision
+        
+        for hole_pos in self.holes:
+            #Se crea un cuadrado de colision para el hueco
+            hole_rect = pygame.Rect(hole_pos[0], hole_pos[1], self.frog.size[0], self.frog.size[1])
+            #Comprobamos si la rana colisiona en algun hueco
+            if frog_rect.colliderect(hole_rect):
+                #Dibuja una rana en el hueco
+                Object(hole_pos, self.frog.size, "assets/grass/ranita.png", self.object_group)
+                
+                #Sonido de completado
+                pygame.mixer.Sound.play(self.success_sound)
+                
+                #Incremento de score
+                self.increase_score(100)
+                
+                #reinicio de contador
+                self.reset_timer()
+                
+                #reinicio de posicion
+                self.frog.reset_position()
+                
+                
+                break #evitamos que compruebe otros huecos
+            
+    
     
     def increase_live(self):
         self.lives += 1
@@ -85,15 +124,6 @@ class Game:
         #Fondo/Background
         Object((0,0), (672, 768), "assets/background.png", self.object_group)
         
-        # Pasto seguro(Agregamos huecos)
-        #FIX 
-        #for x in range(0, 128, 128): #Creamos huecos con separacion
-            #SafeZone((x, 48), (48, 48), "assets/grass/green.png", self.object_group, self)
-        
-
-
-
-        
         
         #Pasto/grass zonas donde la rana esta segura
         for x in range(14):
@@ -102,15 +132,7 @@ class Game:
         
         
         
-        #Pasto/grass ubicado en el area superior
-        #for x in range(28):
-            #Object((x*24, 72), (24, 72), "assets/grass/green.png", self.object_group)
         
-        #Test
-        #for x in range(14):
-        #Object((x*24, 72), (100, 72), "assets/grass/hueco.png", self.object_group)
-        
-        #Dibujo del pasto superior
         
         
         Object((0, 72), (100, 72), "assets/grass/hueco.png", self.object_group) 
@@ -129,12 +151,7 @@ class Game:
         Object((544, 72), (24, 72), "assets/grass/green.png", self.object_group)
         Object((568, 72), (24, 72), "assets/grass/green.png", self.object_group)
         
-        Object((592, 72), (80, 72), "assets/grass/hueco.png", self.object_group) 
-        
-        
-         
-        
-            #Object((x*24, 72), (24, 72), "assets/grass/green.png", self.object_group)
+        Object((592, 72), (80, 72), "assets/grass/hueco.png", self.object_group)  
         
         
             
@@ -142,11 +159,15 @@ class Game:
         speeds = [-2.25, -2, -1.75, -1.5, -1.25, 1.25, 1.5, 1.75, 2, 2.25]
         random.shuffle(speeds)
         
+        
+        
         #Carriles del rio
         for y in range(5):
             y_pos = y*48 + 144
+            #Objeto del carril
             new_lane = Lane((0, y_pos), self.river_group, speeds.pop(), "river")
             self.river_speeds[y_pos // 48] = new_lane.speed
+            
             #possible error
         
         #Carriles de la calle
@@ -156,7 +177,7 @@ class Game:
         
         #Inicializamos la rana frogger(posicion inicial(2 argumentos), su tamano, su imagen, su agrupacion de sprites y colisiones)
         #self.frog = Frog((336, 672), (48, 48), "assets/froggy/up.png", self.frog_group, [self.car_group, self.river_group], self.river_speeds, self)
-        self.frog = Frog((336, 672), (48, 48), "assets/froggy/up.png", self.frog_group, [self.car_group, self.river_group], self.river_speeds, self)
+        self.frog = Frog((312, 672), (48, 48), "assets/froggy/up.png", self.frog_group, [self.car_group, self.river_group], self.river_speeds, self)
     
     
     def draw_time_bar(self):
@@ -164,73 +185,87 @@ class Game:
         # Calcular el porcentaje del tiempo restante
         time_ratio = max(0, self.time_left / self.time_limit)  # Aseguramos que nunca sea negativo
 
-        # Dimensiones de la barra de tiempo
-        total_width = 300  # Ancho total de la barra
-        height = 20  # Altura de la barra
-        current_width = int(total_width * time_ratio)  # Ancho de la barra basado en el tiempo restante
-
+        #Dimensiones de la barra de tiempo
+        width = 300  
+        height = 20  
+        #Ancho de la barra basado en el tiempo restante
+        current_width = int(width * time_ratio)
         # Posición de la barra (inferior de la pantalla)
-        x_pos = self.DISPLAY.get_width() - total_width - 10  # 10 px de margen desde la derecha
-        y_pos = self.DISPLAY.get_height() - height - 10  # 10 px de margen desde el fondo
+        x_pos = self.DISPLAY.get_width() - width - 10  #10 px de margen desde la derecha
+        y_pos = self.DISPLAY.get_height() - height - 10  #10 px de margen desde el fondo
 
         # Dibujar el fondo de la barra (en rojo)
-        pygame.draw.rect(self.DISPLAY, (255, 0, 0), (x_pos, y_pos, total_width, height))
+        pygame.draw.rect(self.DISPLAY, (255, 0, 0), (x_pos, y_pos, width, height))
 
         # Dibujar la parte restante de la barra (en verde)
-        pygame.draw.rect(self.DISPLAY, (0, 255, 0), (x_pos, y_pos, current_width, height))
+        pygame.draw.rect(self.DISPLAY, (0, 255, 0), (x_pos + (width - current_width), y_pos, current_width, height))
         
-        #Cargar y dibujar el icono
+        #Cargar y reescalar el icono
         time_icon = pygame.image.load("assets/icons/time.png")
-        time_icon = pygame.transform.scale(time_icon, (50, 30))
+        time_icon = pygame.transform.scale(time_icon, (50, 20))
         
-        self.DISPLAY.blit(time_icon, (x_pos - 55, y_pos - 5))
+        
+        #Dibujar en pantalla
+        self.DISPLAY.blit(time_icon, (x_pos - 55, y_pos ))
         
     def update_timer(self):
         
-        """Actualiza el temporizador. Si el tiempo se agota, ejecuta las acciones correspondientes."""
-        # Calcular el tiempo transcurrido
+        """Actualiza el contador, una vez que finalice, la rana pierde una vida"""
+        #Calculo del tiempo
         current_time = pygame.time.get_ticks()
         elapsed_time = (current_time - self.start_time) / 1000  # Convertir a segundos
         self.time_left = self.time_limit - elapsed_time  # Calcular el tiempo restante
 
         if self.time_left <= 0:
+            pygame.mixer.Sound.play(self.fail_sound)
             self.lose_life()  # Si el tiempo se acaba, perder una vida
             self.reset_timer()  # Reiniciar el temporizador
-
-
-
-        
-        
         
     def reset_timer(self):
         """Reinicia el temporizador"""
+        
+        #Ojo con esta linea, creo que es innecesaria
         self.time_left = self.time_limit
         self.start_time = pygame.time.get_ticks()
         
                 
     def show_start_game(self):
         """Muestra el texto 'start game' antes de iniciar el juego"""
+        #Creamos la variable con sus respectivos atributos
         start_surface = self.font.render('Start Game', True, (255, 0, 0))
         
+        #Dibujamos en pantalla
         self.DISPLAY.blit(start_surface, (self.DISPLAY.get_width() // 2 - start_surface.get_width() // 2, self.DISPLAY.get_height() // 2))
+        
+        #Actualizamos el dibujo
         pygame.display.update()
+        
         pygame.time.delay(1500) # 1.5 seg
     
 
     def displayHUD(self):
-        """
-        Muestra las vidas, el puntaje y el maximo en la pantalla"""
+        """Muestra las vidas, el puntaje y el maximo en la pantalla"""
         for i in range(self.lives):
             self.DISPLAY.blit(self.lives_icon, (10 + i * 40, 730))  # Dibuja iconos de vida
+        score_surface = self.font.render(f"1-UP", True, (255, 255, 255))
+        score_num_surface = self.font.render(f"{self.score}", True, (255, 0, 0))
+        
+        high_score_surface = self.font.render(f"HI-SCORE", True, (255, 255, 255))
+        high_score_num_surface = self.font.render(f"{self.high_score}", True, (255, 0, 0))
+        
+        
+        
+        #Dibujar hud (var, pos (x, y))
+        self.DISPLAY.blit(score_surface, (40,10))
+        self.DISPLAY.blit(score_num_surface, (80, 40))
+        
+        self.DISPLAY.blit(high_score_surface, (400, 10))
+        self.DISPLAY.blit(high_score_num_surface, (485, 40))
+        
+        #DEBBUGING
         #print(f"Current score: {self.score}, High score: {self.high_score}") # Verificamos puntaje
-        lives_surface = self.font.render(f"Vidas: {self.lives}", True, (255, 255, 255))
-        score_surface = self.font.render(f"Score: {self.score}", True, (255, 255, 255))
-        high_score_surface = self.font.render(f"High Score: {self.high_score}", True, (255, 255, 255))
-        
-        
-        self.DISPLAY.blit(lives_surface, (10, 10))
-        self.DISPLAY.blit(score_surface, (150,10))
-        self.DISPLAY.blit(high_score_surface, (450, 10))
+        #lives_surface = self.font.render(f"Vidas: {self.lives}", True, (255, 255, 255))
+        #self.DISPLAY.blit(lives_surface, (10, 10))
             
     
     def lose_life(self):
@@ -251,6 +286,7 @@ class Game:
         print("Test de incremento de score...")
         self.score += points
         print(f"Score: {self.score}")
+        #Si el puntaje es mayor que el record actual, se reasigna la variable
         if self.score > self.high_score:
             self.high_score = self.score
             
@@ -260,19 +296,21 @@ class Game:
         print("Game over")
         self.display_game_over_message()
         pygame.time.wait(3000) # 3 seg
+        
+        #Volvemos a incrementar las vidas y reiniciar el puntaje para comenzar de nuevo
         self.lives += 3
         self.score = 0
         self.frog.reset_position()
         
     def display_game_over_message(self):
-        """Muestra el mensaje 'game over' """
+        """Dibuja 'game over' en la pantalla"""
         game_over_surface = self.font.render("Game Over", True, (255, 0, 0))
-        self.DISPLAY.blit(game_over_surface, (280, 350))
+        self.DISPLAY.blit(game_over_surface, (240, 350))
         pygame.display.update()
     def run(self):
         """Bucle principal del juego, maneja los eventos de entrada, actualiza los objetos y refresca la pantalla"""
         self.DISPLAY.fill((0, 0, 0))
-        self.show_start_game() # mostrar texto al iniciar el juego
+        self.show_start_game() #Funcion paramostrar texto al iniciar el juego
         
         
         
@@ -282,6 +320,7 @@ class Game:
             
             #Movimiento de la rana segun la tecla presionada
             self.frog.keyups = []
+            
             
             
             
@@ -297,8 +336,6 @@ class Game:
             for group in self.all_group:
                 for sprite in group:
                     sprite.update()
-                    if isinstance(sprite, SafeZone):
-                        sprite.check_frog(self.frog) #Verifica si la rana ha entrado
                 group.draw(self.DISPLAY)
             
             #Mostrar HUD
@@ -308,6 +345,7 @@ class Game:
             
             #Refresa la pantalla con nuevos dibujos
             pygame.display.update()
+        
 
 
 

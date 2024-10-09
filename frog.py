@@ -1,8 +1,6 @@
 import pygame
-
 from object import *
-from safe_zone import *
-
+#from main import *
 class Frog(Object):
     def __init__(self, pos, size, image_directory, group, collision_groups, river_speeds, game):
         """
@@ -28,6 +26,7 @@ class Frog(Object):
         self.image = pygame.image.load(image_directory)
         self.image = pygame.transform.scale(self.image, size)  # Escala la imagen al tamaño especificado
         self.rect = self.image.get_rect(topleft=pos)
+        
         
         
         
@@ -65,26 +64,22 @@ class Frog(Object):
             pygame.mixer.Sound.play(self.game.hop_sound)
         
         x += self.x_speed #Aplica la velocidad horizontal
-        #Comprobar si frogger llega a la parte superior de la pantalla
-        if y < 130:
-            print("Test de si frog llego al objetivo")
-            self.game.increase_score(100) #Anadimos los puntos
-            self.reset_position()
-            self.game.increase_live()
-            
+        
         
         #Verifica los limites de la pantalla y mata a la rana si sale
-        """if x <= -48 or x > 48*14 or y > 48*16:
+        if x <= -48 or x > 48*14 or y > 48*16:
+            pygame.mixer.Sound.play(self.game.fail_sound)
             self.killFrog()
-            return"""
+            return
         #Actualiza la posicion de la rana
         
         self.pos = (x, y)
     
     def reset_position(self):
         """Reinicia la posicion de la rana al inicio"""
-        self.pos = (336, 672)
+        self.pos = (312, 672)
         self.x_speed = 0
+        
     
     
     def checkCollisions(self):
@@ -96,20 +91,16 @@ class Frog(Object):
         
         self.setImage() #Establece la imagen actual de la rana
         
-        for sprite in self.game.object_group:
-            if isinstance(sprite, SafeZone):
-                sprite.check_frog(self)
-                return #Si frogeger llega al hueco, no necesita seguri verificando colisiones
-                
-        
-        
         #Variable de colision
+        self.game.check_if_in_hole() #Primero llamamos a la funcion de verificar si la rana esta en el hueco, para evitar la muerte de colision
         collided = False
         for sprite_group in self.collision_groups:
             if pygame.sprite.spritecollideany(self, sprite_group):
                 collided = True #Detecta la colision
         
         lane = self.pos[1] // 48 #Determina en que carril se encuentra la rana
+        
+        
         if collided:
             if lane < 8: #Si esta en una lane de rio
                 self.x_speed = self.river_speeds[lane] #Establece la velocidad del rio
@@ -120,21 +111,15 @@ class Frog(Object):
             self.x_speed = 0 #Resetea la velocidad horizontal
             if lane < 8: #Si esta en una lane de rio pero no hay colision entonces mata a la rana
                 self.killFrog()
-                pygame.mixer.Sound.play(self.game.die_land_sound)
-                
-    
+                pygame.mixer.Sound.play(self.game.drown_sound)
     
     def killFrog(self):
-        """
-        Resetea la rana a su posicion inicial y establece su imagen
         
+        #Resetea la rana a su posicion inicial
         self.x_speed = 0 #resetea la velocidad horizontal
-        
-        #restablece la posicion y la imagen de la rana
-        self.pos = (336, 672)
         self.image_directory = "assets/froggy/up.png"
         self.setImage() #establece la imagen
-        """
+        
         #Accion cuando muere la rana
         self.game.lose_life()
     
@@ -142,3 +127,7 @@ class Frog(Object):
         self.setImage() #actualiza la imagen
         self.moveFrog() #Mueve a la rana
         self.checkCollisions() #Verifica colisiones
+        
+        #if self.rect.top <= 150:
+            #self.game.check_if_in_hole()
+            
