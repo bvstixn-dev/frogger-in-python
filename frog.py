@@ -25,6 +25,9 @@ class Frog(Object):
         self.game = game #Referencia al juego para manejar las vidas y el puntaje
         self.image = pygame.image.load(image_directory)
         self.image = pygame.transform.scale(self.image, size)  # Escala la imagen al tamaño especificado
+        
+        
+        
         self.rect = self.image.get_rect(topleft=pos)
         
         

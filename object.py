@@ -19,6 +19,9 @@ class Object(pygame.sprite.Sprite):
         self.size = size #Almacena el tamano del objeto
         self.image_directory = image_directory #Almacena la ruta de imagen
         
+        
+        
+        
     def setImage(self):
         """
         Carga la imagen desde la ruta especificada, la escala del tamano del objeto y configura la superficie y el rectangulo del sprite

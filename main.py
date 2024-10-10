@@ -63,7 +63,7 @@ class Game:
         self.assetSetup()
         
         #cordenada de los huecos
-        self.holes = [(24, 96),(172, 96),(320, 96),(468, 96),(606, 96)]
+        self.holes = [(26, 96),(174, 96),(322, 96),(468, 96),(606, 96)]
         
         
         
@@ -113,7 +113,7 @@ class Game:
     
     
     def increase_live(self):
-        self.lives += 1
+        self.lives + 1
         
     
     def assetSetup(self):
@@ -130,27 +130,30 @@ class Game:
             Object((x*48, 384), (48, 48), "assets/grass/purple.png", self.object_group)
             Object((x*48, 672), (48, 48), "assets/grass/purple.png", self.object_group)
         
-        
-        
-        
-        
-        
+        #Hueco
         Object((0, 72), (100, 72), "assets/grass/hueco.png", self.object_group) 
+        #pasto
         Object((100, 72), (24, 72), "assets/grass/green.png", self.object_group)
         Object((124, 72), (24, 72), "assets/grass/green.png", self.object_group)
         
+        #Hueco
         Object((148, 72), (100, 72), "assets/grass/hueco.png", self.object_group)
+        #Pasto
         Object((248, 72), (24, 72), "assets/grass/green.png", self.object_group)
         Object((272, 72), (24, 72), "assets/grass/green.png", self.object_group)
         
+        #Hueco
         Object((296, 72), (100, 72), "assets/grass/hueco.png", self.object_group)
+        #Pasto
         Object((396, 72), (24, 72), "assets/grass/green.png", self.object_group)
         Object((420, 72), (24, 72), "assets/grass/green.png", self.object_group)
         
+        #Hueco
         Object((444, 72), (100, 72), "assets/grass/hueco.png", self.object_group)
+        #Pasto
         Object((544, 72), (24, 72), "assets/grass/green.png", self.object_group)
         Object((568, 72), (24, 72), "assets/grass/green.png", self.object_group)
-        
+        #Hueco
         Object((592, 72), (80, 72), "assets/grass/hueco.png", self.object_group)  
         
         
