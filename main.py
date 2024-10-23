@@ -79,7 +79,7 @@ class Game:
         self.die_land_sound = pygame.mixer.Sound("assets/music/sounds/Die-on-Land.ogg")
         self.success_sound = pygame.mixer.Sound("assets/music/sounds/credit.ogg")
         self.fail_sound = pygame.mixer.Sound("assets/music/sounds/fail_sound.ogg")
-        
+        self.warning_sound = pygame.mixer.Sound("assets/music/sounds/warning_sound.ogg")
     
     
     def check_if_in_hole(self):
@@ -194,22 +194,33 @@ class Game:
         #Ancho de la barra basado en el tiempo restante
         current_width = int(width * time_ratio)
         # Posición de la barra (inferior de la pantalla)
-        x_pos = self.DISPLAY.get_width() - width - 10  #10 px de margen desde la derecha
+        x_pos = self.DISPLAY.get_width() - width - 70  #10 px de margen desde la derecha
         y_pos = self.DISPLAY.get_height() - height - 10  #10 px de margen desde el fondo
 
         # Dibujar el fondo de la barra (en rojo)
-        pygame.draw.rect(self.DISPLAY, (255, 0, 0), (x_pos, y_pos, width, height))
+        #pygame.draw.rect(self.DISPLAY, (255, 0, 0), (x_pos, y_pos, width, height))
 
+        if self.time_left <= 10:
+            bar_color = (255, 0, 0)
+            if not self.warning_sound_played:
+                pygame.mixer.Sound.play(self.warning_sound)  # Reemplaza con tu objeto de sonido
+                self.warning_sound_played = True  # Marca que el sonido se ha reproducido
+                
+        else:
+            bar_color = (0, 255, 0)
+            self.warning_sound_played = False  # Restablece la variable cuando se sale de la condición
+            
+        
         # Dibujar la parte restante de la barra (en verde)
-        pygame.draw.rect(self.DISPLAY, (0, 255, 0), (x_pos + (width - current_width), y_pos, current_width, height))
+        pygame.draw.rect(self.DISPLAY, bar_color, (x_pos + (width - current_width), y_pos, current_width, height))
         
         #Cargar y reescalar el icono
         time_icon = pygame.image.load("assets/icons/time.png")
-        time_icon = pygame.transform.scale(time_icon, (50, 20))
+        time_icon = pygame.transform.scale(time_icon, (55, 20))
         
         
         #Dibujar en pantalla
-        self.DISPLAY.blit(time_icon, (x_pos - 55, y_pos ))
+        self.DISPLAY.blit(time_icon, (x_pos + 305, y_pos ))
         
     def update_timer(self):
         

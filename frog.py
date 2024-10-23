@@ -43,6 +43,8 @@ class Frog(Object):
         x = self.pos[0]
         y = self.pos[1]
         
+        
+        
         #Controles de movimiento
         if pygame.K_UP in self.keyups:
             self.image_directory = "assets/froggy/up.png"
