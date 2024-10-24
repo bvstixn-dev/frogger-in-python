@@ -65,14 +65,23 @@ class Game:
         #cordenada de los huecos
         self.holes = [(26, 96),(174, 96),(322, 96),(468, 96),(606, 96)]
         
+        self.occupied_holes = []
         
+        self.max_holes = 5
         
         
     
     def load_sounds(self):
         """Carga la musica"""
-        pygame.mixer.music.load("assets/music/sounds/MainTheme.ogg")
+        main_theme = pygame.mixer.music.load("assets/music/sounds/MainTheme.ogg")
         pygame.mixer.music.play(-1) #La musica se repite en bucle
+        
+        #volumen
+        pygame.mixer.music.set_volume(0.3)
+        
+        
+        
+        
         
         self.hop_sound = pygame.mixer.Sound("assets/music/sounds/Hop.ogg")
         self.drown_sound = pygame.mixer.Sound("assets/music/sounds/Drown.ogg")
@@ -80,8 +89,18 @@ class Game:
         self.success_sound = pygame.mixer.Sound("assets/music/sounds/credit.ogg")
         self.fail_sound = pygame.mixer.Sound("assets/music/sounds/fail_sound.ogg")
         self.warning_sound = pygame.mixer.Sound("assets/music/sounds/warning_sound.ogg")
+    def reset_holes(self):
+        #Limpiar huecos ocupados
+        self.occupied_holes.clear() 
+        #actualiza la pantalla
+        self.reset_holes_graphics() 
     
-    
+    def reset_holes_graphics(self):
+        for hole in self.holes:
+            for obj in self.object_group:  
+                if isinstance(obj, Object) and obj.position == hole:  #Compreba si el objeto es la rana y está en el hueco
+                    self.object_group.remove(obj)  # Eliminar el sprite de la rana
+                    break  # Salir del bucle después de eliminar la rana en el hueco
     def check_if_in_hole(self):
         "Checkea si la rana llego en un hueco, en ese caso, dibuja una rana en el hueco"
         
@@ -92,23 +111,37 @@ class Game:
             hole_rect = pygame.Rect(hole_pos[0], hole_pos[1], self.frog.size[0], self.frog.size[1])
             #Comprobamos si la rana colisiona en algun hueco
             if frog_rect.colliderect(hole_rect):
-                #Dibuja una rana en el hueco
-                Object(hole_pos, self.frog.size, "assets/grass/ranita.png", self.object_group)
+                if hole_pos not in self.occupied_holes: #Verifica si esta ocupado el hueco
+                        
+                    #Dibuja una rana en el hueco
+                    Object(hole_pos, self.frog.size, "assets/grass/ranita.png", self.object_group)
+                    
+                    #Sonido de completado
+                    pygame.mixer.Sound.play(self.success_sound)
+                    
+                    #Incremento de score
+                    self.increase_score(100)
+                    
+                    #Marcar como ocupado
+                    self.occupied_holes.append(hole_pos)
+                    if len(self.occupied_holes) >= self.max_holes:
+                        self.reset_holes()  # Reiniciar los huecos
+                        self.reset_holes_graphics()  # Limpiar gráficos de los huecos
+                    
+                    
+                    #reinicio de contador
+                    self.reset_timer()
+                    
+                    #reinicio de posicion
+                    self.frog.reset_position()
+                else:
+                    self.frog.killFrog()
+                    self.lose_life()
+                    pygame.mixer.Sound.play(self.fail_sound)
+                    print("Testeo de perder vida")
+                    break
                 
-                #Sonido de completado
-                pygame.mixer.Sound.play(self.success_sound)
                 
-                #Incremento de score
-                self.increase_score(100)
-                
-                #reinicio de contador
-                self.reset_timer()
-                
-                #reinicio de posicion
-                self.frog.reset_position()
-                
-                
-                break #evitamos que compruebe otros huecos
             
     
     

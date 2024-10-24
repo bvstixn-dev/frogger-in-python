@@ -19,7 +19,7 @@ class Object(pygame.sprite.Sprite):
         self.size = size #Almacena el tamano del objeto
         self.image_directory = image_directory #Almacena la ruta de imagen
         
-        
+        self.position = pos
         
         
     def setImage(self):
