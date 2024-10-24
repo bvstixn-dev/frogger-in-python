@@ -38,7 +38,14 @@ class Game:
         
         #Diccionario para almacenar las velocidades de las lineas del rio
         self.river_speeds = {}
+        
+        self.base_speeds = {
+            "street": [-2.25, -2, 1.75, 2 ,2.25],
+            "river": [-1.5, -1.25, 1.25, 1.5]
+        }
 
+        
+        
         #iconos
         self.lives_icon = pygame.image.load("assets/froggy/icon.png")  # Cargar imagen de la vida (48x48)
         self.lives_icon = pygame.transform.scale(self.lives_icon, (32, 32))  # Redimensionar la imagen
@@ -69,6 +76,7 @@ class Game:
         
         self.max_holes = 5
         
+        self.level = 1
         
     
     def load_sounds(self):
@@ -94,6 +102,7 @@ class Game:
         self.occupied_holes.clear() 
         #actualiza la pantalla
         self.reset_holes_graphics() 
+        
     
     def reset_holes_graphics(self):
         for hole in self.holes:
@@ -101,6 +110,23 @@ class Game:
                 if isinstance(obj, Object) and obj.position == hole:  #Compreba si el objeto es la rana y está en el hueco
                     self.object_group.remove(obj)  # Eliminar el sprite de la rana
                     break  # Salir del bucle después de eliminar la rana en el hueco
+    
+    def show_time_message(self):
+        #configurar fuente y tamano
+        font = self.font
+        
+        texto = f"Time {self.level}"
+        
+        texto = font.render(texto, True, (255, 0 ,0)) #rojo
+        
+        text_rect = texto.get_rect(center=(self.DISPLAY.get_width() // 2, self.DISPLAY.get_height() //2))
+        
+        self.DISPLAY.blit(texto, text_rect)
+        
+        pygame.display.update()
+        
+        pygame.time.delay(1000)
+    
     def check_if_in_hole(self):
         "Checkea si la rana llego en un hueco, en ese caso, dibuja una rana en el hueco"
         
@@ -119,8 +145,13 @@ class Game:
                     #Sonido de completado
                     pygame.mixer.Sound.play(self.success_sound)
                     
+                    #mensaje en el centro de la pantalla
+                    self.show_time_message()
+                    
                     #Incremento de score
                     self.increase_score(100)
+                    
+                    self.level += 1
                     
                     #Marcar como ocupado
                     self.occupied_holes.append(hole_pos)
@@ -149,10 +180,17 @@ class Game:
         self.lives + 1
         
     
-    def assetSetup(self):
+    def assetSetup(self, level=1):
         """
         Configura los objectos iniciales, incluyendo el fondo, el pasto y los autos
         """
+        
+        speed_multiplier = 1 + (level * 0.1)
+        
+        #Velocidades aleatorias para los autos y rio
+        
+        speeds = [-2.25, -2, -1.75, -1.5, -1.25, 1.25, 1.5, 1.75, 2, 2.25] * 2
+        random.shuffle(speeds)
         
         #Fondo/Background
         Object((0,0), (672, 768), "assets/background.png", self.object_group)
@@ -191,17 +229,16 @@ class Game:
         
         
             
-        #Valocidades aleatorias para los autos y rio
-        speeds = [-2.25, -2, -1.75, -1.5, -1.25, 1.25, 1.5, 1.75, 2, 2.25]
-        random.shuffle(speeds)
+        
         
         
         
         #Carriles del rio
         for y in range(5):
             y_pos = y*48 + 144
+            speed = speeds.pop() * speed_multiplier
             #Objeto del carril
-            new_lane = Lane((0, y_pos), self.river_group, speeds.pop(), "river")
+            new_lane = Lane((0, y_pos), self.river_group, speed, "river")
             self.river_speeds[y_pos // 48] = new_lane.speed
             
             #possible error
@@ -209,7 +246,10 @@ class Game:
         #Carriles de la calle
         for y in range(5):
             y_pos = y*48 + 432
-            Lane((0, y_pos), self.car_group, speeds.pop(), "street")
+            speed = speeds.pop() * speed_multiplier
+            
+            
+            Lane((0, y_pos), self.car_group, speed, "street")
         
         #Inicializamos la rana frogger(posicion inicial(2 argumentos), su tamano, su imagen, su agrupacion de sprites y colisiones)
         #self.frog = Frog((336, 672), (48, 48), "assets/froggy/up.png", self.frog_group, [self.car_group, self.river_group], self.river_speeds, self)

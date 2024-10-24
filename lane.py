@@ -21,6 +21,11 @@ class Lane:
         #configura los obstaculos del carril
         self.setupObstacles()
     
+    def update(self, delta_tiempo):
+        
+        for obstacle in self.group:
+            obstacle.pos = (obstacle.pos[0] + self.speed * delta_tiempo, obstacle.pos[1])
+            obstacle.rect.topleft = obstacle.pos
     
     def setupObstacles(self):
         """

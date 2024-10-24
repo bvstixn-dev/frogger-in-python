@@ -21,7 +21,7 @@ class Menu:
         #Fuentes para el menu
         self.font = pygame.font.Font("assets/fonts/PressStart2P.ttf", 24)
         #Opciones del menu
-        self.options = ["Jugar", "Multijugador", "Skins", "Salir"]
+        self.options = ["Jugar", "Multijugador", "Skins", "Opciones", "Salir"]
         self.selected_option = 0
         
         #cargar prototipo
@@ -179,7 +179,18 @@ class Menu:
         self.screen.blit(close_text, (self.close_button_rect.x + 10, self.close_button_rect.y))
         
         pygame.display.flip()
+    
+    def display_options(self):
         
+        self.DISPLAY.fill((50, 50, 50))
+        
+        font = self.font
+        option_text = font.render("Opciones - Presiona ESC para volver XD", True, (255, 255, 255))
+        text_rect = option_text.get_rect(center=(self.DISPLAY.get_width() // 2, self.DISPLAY.get_heigh() // 2 - 100))
+        self.DISPLAY.blit(option_text, text_rect)
+        
+        pygame.display.update()
+    
     def run(self):
         while True:
             if not self.showing_lobbies and not self.showing_skins:
@@ -188,6 +199,7 @@ class Menu:
                 self.display_lobbies()  # Mostrar pantalla de prototipo
             elif self.showing_skins:
                 self.display_skins()  # Mostrar pantalla de skins
+            
             
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -208,12 +220,15 @@ class Menu:
                                 time.sleep(2)
                                 return  # Jugar
                             elif self.selected_option == 1:
-                                # Mostrar prototipo para "Multijugador"
+                                #Multijugador
                                 self.showing_lobbies = True
                             elif self.selected_option == 2:
-                                # Mostrar prototipo para "Skins"
+                                #Skin
                                 self.showing_skins = True
                             elif self.selected_option == 3:
+                                #Opciones
+                                self.showing_options = True
+                            elif self.selected_option == 4:
                                 pygame.quit()
                                 sys.exit()
                 else:
