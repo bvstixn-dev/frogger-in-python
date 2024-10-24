@@ -294,20 +294,21 @@ class Game:
         """Muestra las vidas, el puntaje y el maximo en la pantalla"""
         for i in range(self.lives):
             self.DISPLAY.blit(self.lives_icon, (10 + i * 40, 730))  # Dibuja iconos de vida
+        
         score_surface = self.font.render(f"1-UP", True, (255, 255, 255))
-        score_num_surface = self.font.render(f"{self.score}", True, (255, 0, 0))
+        score_num_surface = self.font.render(f"{str(self.score).zfill(5)}", True, (255, 0, 0))
         
         high_score_surface = self.font.render(f"HI-SCORE", True, (255, 255, 255))
-        high_score_num_surface = self.font.render(f"{self.high_score}", True, (255, 0, 0))
+        high_score_num_surface = self.font.render(f"{str(self.high_score).zfill(5)}", True, (255, 0, 0))
         
         
         
         #Dibujar hud (var, pos (x, y))
-        self.DISPLAY.blit(score_surface, (40,10))
+        self.DISPLAY.blit(score_surface, (100,10))
         self.DISPLAY.blit(score_num_surface, (80, 40))
         
         self.DISPLAY.blit(high_score_surface, (400, 10))
-        self.DISPLAY.blit(high_score_num_surface, (485, 40))
+        self.DISPLAY.blit(high_score_num_surface, (455, 40))
         
         #DEBBUGING
         #print(f"Current score: {self.score}, High score: {self.high_score}") # Verificamos puntaje
