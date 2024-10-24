@@ -51,7 +51,7 @@ class Game:
         
         
         #Iniciarlizar vidas y puntaje
-        self.lives = 3
+        self.lives = 7
         self.score = 0
         self.high_score = 0
         self.font = pygame.font.Font("assets/fonts/PressStart2P.ttf", 25)
