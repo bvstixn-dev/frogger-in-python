@@ -30,10 +30,21 @@ class Frog(Object):
         
         self.rect = self.image.get_rect(topleft=pos)
         
+        self.death_image = [
+            pygame.image.load("assets/animation/death/death1.png"),
+            pygame.image.load("assets/animation/death/death2.png"),
+            pygame.image.load("assets/animation/death/death3.png"),
+            pygame.image.load("assets/animation/death/death4.png"),
+            pygame.image.load("assets/animation/death/death5.png"),
+            pygame.image.load("assets/animation/death/death6.png")
+            
+        ]
         
+        self.death_image = [pygame.transform.scale(i, size) for i in self.death_image]
         
-        
-        
+        self.is_dead = False
+        self.death_frame = 0
+        self.death_timer = 0
         
     def moveFrog(self):
         """
@@ -121,18 +132,43 @@ class Frog(Object):
     def killFrog(self):
         
         #Resetea la rana a su posicion inicial
+        self.is_dead = True
+        self.death_frame = 0
         self.x_speed = 0 #resetea la velocidad horizontal
         self.image_directory = "assets/froggy/up.png"
         self.setImage() #establece la imagen
         
+        
         #Accion cuando muere la rana
         self.game.lose_life()
     
-    def update(self):
-        self.setImage() #actualiza la imagen
-        self.moveFrog() #Mueve a la rana
-        self.checkCollisions() #Verifica colisiones
+    def animate_death(self):
+        current_time = pygame.time.get_ticks()
         
+        #Control de velocidad
+        if current_time - self.death_timer > 150:
+            if self.death_frame < len(self.death_image):
+                self.image = self.death_image[self.death_frame]
+                self.death_frame += 1
+            self.death_timer = current_time
+            
+        #Resetear estado
+        if self.death_frame >= len(self.death_image):
+            self.is_dead = False
+            self.death_frame = 0
+    
+    def update(self):
+        
+        if self.is_dead:
+            self.animate_death()
+            self.reset_position()
+        
+        else:
+            
+            self.setImage() #actualiza la imagen
+            self.moveFrog() #Mueve a la rana
+            self.checkCollisions() #Verifica colisiones
+            
         #if self.rect.top <= 150:
             #self.game.check_if_in_hole()
             

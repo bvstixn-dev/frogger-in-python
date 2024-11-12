@@ -12,7 +12,7 @@ class Menu:
         
         #Cargar logo de frogger
         self.logo_image = pygame.image.load("assets/frogger_title.png")
-        self.logo_image = pygame.transform.scale(self.logo_image, (200, 100)) #Escalar imagen/logo
+        self.logo_image = pygame.transform.scale(self.logo_image, (400, 150)) #Escalar imagen/logo
         
         #Cargar sonido
         self.select_sound = pygame.mixer.Sound("assets/music/sounds/select_sound.wav")
@@ -21,12 +21,10 @@ class Menu:
         #Fuentes para el menu
         self.font = pygame.font.Font("assets/fonts/PressStart2P.ttf", 24)
         #Opciones del menu
-        self.options = ["Jugar", "Multijugador", "Skins", "Opciones", "Salir"]
+        self.options = ["Jugar", "Skins", "Opciones", "Salir"]
         self.selected_option = 0
         
-        #cargar prototipo
-        self.prototipo_image = pygame.image.load("assets/wireframes_multijugador.png")
-        self.prototipo_image = pygame.transform.scale(self.prototipo_image, (400, 300))# ajusta segun necesario
+
         
         #Cargar prototipo de skin
         self.skins_image = pygame.image.load("assets/wireframes_skins.png")
@@ -36,61 +34,9 @@ class Menu:
         self.button_size = 40
         self.close_button_rect = pygame.Rect(600, 20, self.button_size, self.button_size)
         
-        #estados
-        #self.showing_prototipo = False
+        
         self.showing_skins = False
         
-        
-        
-        
-        #Lobbies simulados
-        self.lobbies = [("Jugador 1", "192.168.1.2"), ("Jugador 2", "192.168.1.3")]
-        self.selected_lobby = 0
-        
-        #estado del menu
-        self.showing_lobbies = False
-        
-        
-    def display_lobbies(self):
-        #Fondo blanco 
-        self.screen.fill((255, 255, 255))
-        
-        #Dibujar titulo
-        title_surface = self.font.render("Lobbies", True, (0, 0, 0))
-        title_rect = title_surface.get_rect(center=(self.screen.get_width() // 2, 100))
-        self.screen.blit(title_surface, title_rect)
-        
-        
-        #Dibujar lobbies simulados
-        for i, lobby in enumerate(self.lobbies):
-            color = (0, 0, 0) if i == self.selected_lobby else (100, 100, 100)
-            lobby_text = f"{lobby[0]} {lobby[1]}"
-            lobby_surface = self.font.render(lobby_text, True, color)
-            lobby_rect = lobby_surface.get_rect(center=(self.screen.get_width() // 2, 200 + i * 50))
-            self.screen.blit(lobby_surface, lobby_rect)
-            
-            #Dibujar caja negra 
-            pygame.draw.rect(self.screen, (200, 200, 200), lobby_rect) # Gris claro para ver
-            self.screen.blit(lobby_surface, lobby_rect)
-            
-        #Dibujar boton 'crear lobby'
-        create_lobby_text = "Crear lobby"
-        create_lobby_surface = self.font.render(create_lobby_text, True, (0, 0, 0))
-        create_lobby_rect = create_lobby_surface.get_rect(center=(self.screen.get_width() // 2, 400))
-        self.screen.blit(create_lobby_surface, create_lobby_rect)
-        
-        #dibujar x para salir
-        pygame.draw.rect(self.screen, (255, 0 ,0), self.close_button_rect)
-        close_font = pygame.font.Font("assets/fonts/PressStart2P.ttf", 24)
-        close_text = close_font.render("X", True, (255, 255, 255))
-        self.screen.blit(close_text, (self.close_button_rect.x + 10, self.close_button_rect.y))
-        
-        pygame.display.flip()
-        
-        
-        
-    
-    
     
     def play_video_opencv(video_path, screen):
         video = cv2.VideoCapture(video_path)
@@ -163,7 +109,7 @@ class Menu:
             text_rect = text_surface.get_rect(center=(self.screen.get_width() // 2, 300 + i * 100))
             self.screen.blit(text_surface, text_rect)
         pygame.display.flip()
-    #def display_prototipo()
+    
     def display_skins(self):
             # Dibujar el fondo en blanco
         self.screen.fill((255, 255, 255))
@@ -193,10 +139,9 @@ class Menu:
     
     def run(self):
         while True:
-            if not self.showing_lobbies and not self.showing_skins:
+            if not self.showing_skins:
                 self.display_menu()  # Mostrar menú principal
-            elif self.showing_lobbies:
-                self.display_lobbies()  # Mostrar pantalla de prototipo
+              # Mostrar pantalla de prototipo
             elif self.showing_skins:
                 self.display_skins()  # Mostrar pantalla de skins
             
@@ -206,7 +151,7 @@ class Menu:
                     pygame.quit()
                     sys.exit()
                 
-                if not self.showing_lobbies and not self.showing_skins:
+                if not self.showing_skins:
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_DOWN:
                             self.selected_option = (self.selected_option + 1) % len(self.options)
@@ -220,31 +165,21 @@ class Menu:
                                 time.sleep(2)
                                 return  # Jugar
                             elif self.selected_option == 1:
-                                #Multijugador
-                                self.showing_lobbies = True
-                            elif self.selected_option == 2:
                                 #Skin
                                 self.showing_skins = True
-                            elif self.selected_option == 3:
+                            elif self.selected_option == 2:
                                 #Opciones
                                 self.showing_options = True
-                            elif self.selected_option == 4:
+                            elif self.selected_option == 3:
                                 pygame.quit()
                                 sys.exit()
                 else:
                     # Interacción con la pantalla de prototipo o skins
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                         if self.close_button_rect.collidepoint(event.pos):
-                            self.showing_lobbies = False
                             self.showing_skins = False
                     elif event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_DOWN:
-                            self.selected_lobby = (self.selected_lobby + 1) % len(self.lobbies)
-                        elif event.key == pygame.K_UP:
-                            self.selected_lobby = (self.selected_lobby - 1) % len(self.lobbies)
-                        elif event.key == pygame.K_ESCAPE:
-                            self.showing_lobbies = False
-                        elif event.key == pygame.K_ESCAPE:
-                            self.showing_prototipo = False
+                       
+                        if event.key == pygame.K_ESCAPE:
                             self.showing_skins = False
         

@@ -40,8 +40,8 @@ class Game:
         self.river_speeds = {}
         
         self.base_speeds = {
-            "street": [-2.25, -2, 1.75, 2 ,2.25],
-            "river": [-1.5, -1.25, 1.25, 1.5]
+            "street": [-2.25, -2, 1.75, 3 ,4.25],
+            "river": [-1.5, -1.25, 2.25, 2.5]
         }
 
         
@@ -77,6 +77,11 @@ class Game:
         self.max_holes = 5
         
         self.level = 1
+        
+        
+        
+        
+        
         
     
     def load_sounds(self):
@@ -189,7 +194,7 @@ class Game:
         
         #Velocidades aleatorias para los autos y rio
         
-        speeds = [-2.25, -2, -1.75, -1.5, -1.25, 1.25, 1.5, 1.75, 2, 2.25] * 2
+        speeds = [-2.25, -2, -1.75, -1.5, -1.25, 2.25, 2.5, 3.75, 4, 4.25] * 2
         random.shuffle(speeds)
         
         #Fondo/Background
@@ -386,14 +391,14 @@ class Game:
         pygame.time.wait(3000) # 3 seg
         
         #Volvemos a incrementar las vidas y reiniciar el puntaje para comenzar de nuevo
-        self.lives += 3
+        self.lives += 7
         self.score = 0
         self.frog.reset_position()
         
     def display_game_over_message(self):
         """Dibuja 'game over' en la pantalla"""
         game_over_surface = self.font.render("Game Over", True, (255, 0, 0))
-        self.DISPLAY.blit(game_over_surface, (240, 350))
+        self.DISPLAY.blit(game_over_surface, (240, 399))
         pygame.display.update()
     def run(self):
         """Bucle principal del juego, maneja los eventos de entrada, actualiza los objetos y refresca la pantalla"""
@@ -426,7 +431,12 @@ class Game:
                     sprite.update()
                 group.draw(self.DISPLAY)
             
+            
+            clock = pygame.time.Clock()
+            fps = 60
+            clock.tick(fps)
             #Mostrar HUD
+            
             self.displayHUD()
             self.update_timer()
             self.draw_time_bar()
