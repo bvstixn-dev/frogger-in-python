@@ -1,4 +1,4 @@
-import pygame, sys, random
+import pygame, sys, random, config
 from object import *
 from frog import *
 from lane import *
@@ -398,7 +398,7 @@ class Game:
     def display_game_over_message(self):
         """Dibuja 'game over' en la pantalla"""
         game_over_surface = self.font.render("Game Over", True, (255, 0, 0))
-        self.DISPLAY.blit(game_over_surface, (240, 399))
+        self.DISPLAY.blit(game_over_surface, (240, 397))
         pygame.display.update()
     def run(self):
         """Bucle principal del juego, maneja los eventos de entrada, actualiza los objetos y refresca la pantalla"""
@@ -457,7 +457,8 @@ if __name__ == "__main__":
     #Configura la ventana
     screen = pygame.display.set_mode(screen_dimensions)
     pygame.display.set_caption(screen_caption)
-    
+    config = config.load_settings()
+    print("setting loaded: ", config)
     
     
     #Crea el menu y corre el juego

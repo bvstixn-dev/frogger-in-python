@@ -1,6 +1,5 @@
-import pygame, cv2, sys, time
+import pygame, cv2, sys, time, config
 import numpy as np
-
 
 class Menu:
     def __init__(self, screen):
@@ -36,6 +35,15 @@ class Menu:
         
         
         self.showing_skins = False
+        
+        self.showing_options = False
+        
+        
+        self.config = config.load_settings()
+        #variable de volumen
+        self.level_volume = int(self.config.get("volume", 5) * 10)
+        
+        
         
     
     def play_video_opencv(video_path, screen):
@@ -128,30 +136,41 @@ class Menu:
     
     def display_options(self):
         
-        self.DISPLAY.fill((50, 50, 50))
-        
+        self.screen.fill((50, 50, 50))
         font = self.font
-        option_text = font.render("Opciones - Presiona ESC para volver XD", True, (255, 255, 255))
-        text_rect = option_text.get_rect(center=(self.DISPLAY.get_width() // 2, self.DISPLAY.get_heigh() // 2 - 100))
-        self.DISPLAY.blit(option_text, text_rect)
-        
+
+        # Título de opciones
+        option_text = font.render("Opciones - Presiona ESC para volver", True, (255, 255, 255))
+        text_rect = option_text.get_rect(center=(self.screen.get_width() // 2, 100))
+        self.screen.blit(option_text, text_rect)
+
+        # Mostrar barra de volumen
+        volume_text = font.render("Volumen: ", True, (255, 255, 255))
+        volume_rect = volume_text.get_rect(center=(self.screen.get_width() // 2 - 50, 200))
+        self.screen.blit(volume_text, volume_rect)
+
+        # Dibujar la barra de volumen
+        for i in range(11):
+            color = (255, 255, 255) if i <= self.level_volume else (100, 100, 100)
+            pygame.draw.rect(self.screen, color, (self.screen.get_width() // 2 + i * 20, 190, 15, 30))
+
         pygame.display.update()
     
     def run(self):
         while True:
-            if not self.showing_skins:
+            if self.showing_skins:
+                self.display_skins()  # Mostrar pantalla de skins (como tienes implementado)
+            elif self.showing_options:
+                self.display_options()  # Mostrar pantalla de opciones
+            else:
                 self.display_menu()  # Mostrar menú principal
-              # Mostrar pantalla de prototipo
-            elif self.showing_skins:
-                self.display_skins()  # Mostrar pantalla de skins
-            
             
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
                 
-                if not self.showing_skins:
+                if not self.showing_skins and not self.showing_options:
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_DOWN:
                             self.selected_option = (self.selected_option + 1) % len(self.options)
@@ -173,6 +192,19 @@ class Menu:
                             elif self.selected_option == 3:
                                 pygame.quit()
                                 sys.exit()
+                elif self.showing_options:
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_ESCAPE:
+                            self.showing_options = False
+                            config.save_settings(self.config)  # Guardar configuración al salir
+                        elif event.key == pygame.K_LEFT:
+                            self.level_volume = max(0, self.level_volume - 1)
+                            self.config["volume"] = self.level_volume / 10
+                            pygame.mixer.music.set_volume(self.config["volume"])
+                        elif event.key == pygame.K_RIGHT:
+                            self.level_volume = min(10, self.level_volume + 1)
+                            self.config["volume"] = self.level_volume / 10
+                            pygame.mixer.music.set_volume(self.config["volume"])
                 else:
                     # Interacción con la pantalla de prototipo o skins
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
