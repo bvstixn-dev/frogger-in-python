@@ -136,41 +136,45 @@ class Menu:
         self.screen.blit(reset_text, reset_rect)
 
         pygame.display.update()
-
-    
-    def reset_score(self):
-         # Restablece el archivo config.json
-        default_config = {
-            "score": 0,
-            "volume": self.level_volume  # Mantener el nivel de volumen actual
-        }
+        
+    def save_config(self, reset_score=False):
+        """
+        Guarda la configuración en config.json.
+        Si reset_score es True, se reinicia solo el score; si no, se guarda solo el volumen actual.
+        """
+        # Cargar configuración actual
+        with open("config.json", "r") as config_file:
+            config = json.load(config_file)
+        
+        # Actualizar la configuración según sea necesario
+        if reset_score:
+            config["score"] = 0
+            print("Score reseteado")  # Verificación en consola
+        else:
+            config["volume"] = self.level_volume / 10
+            print(f"Configuración de volumen guardada: {self.level_volume / 10}")  # Verificación en consola
+        
+        # Guardar los cambios en config.json
         with open("config.json", "w") as config_file:
-            json.dump(default_config, config_file)
-        print("Score reseteado")  # Verificación en consola
-            
-
+            json.dump(config, config_file)
     def handle_input(self, event):
-        # Cambiar la opción seleccionada con teclas arriba y abajo
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_DOWN:
-                self.option_index = (self.option_index + 1) % 2  # Alterna entre 0 y 1
-                print(f"Opción seleccionada (DOWN): {self.option_index}")  # Verificación
+                self.option_index = (self.option_index + 1) % 2
             elif event.key == pygame.K_UP:
-                self.option_index = (self.option_index - 1) % 2  # Alterna entre 0 y 1
-                print(f"Opción seleccionada (UP): {self.option_index}")  # Verificación
+                self.option_index = (self.option_index - 1) % 2
             elif event.key == pygame.K_RETURN:
-                # Confirmar la opción seleccionada con Enter
-                if self.option_index == 1:
-                    self.reset_score()
-                    print("Reset Score activado")  # Verificación en consola
+                if self.option_index == 1:  # Si estamos en la opción de "Resetear Score"
+                    self.save_config(reset_score=True)
             # Cambiar el volumen solo si está seleccionada la opción de volumen
             if self.option_index == 0:
                 if event.key == pygame.K_RIGHT and self.level_volume < 10:
                     self.level_volume += 1
-                    print(f"Nivel de volumen aumentado a: {self.level_volume}")  # Verificación
                 elif event.key == pygame.K_LEFT and self.level_volume > 0:
                     self.level_volume -= 1
-                    print(f"Nivel de volumen disminuido a: {self.level_volume}")  # Verificación
+
+        
+    
     def run(self):
         while True:
             if self.showing_skins:
@@ -203,7 +207,6 @@ class Menu:
                                 self.showing_skins = True
                             elif self.selected_option == 2:
                                 #Opciones
-                                
                                 self.showing_options = True
                             elif self.selected_option == 3:
                                 pygame.quit()
@@ -213,11 +216,11 @@ class Menu:
                     # Llama a handle_input para manejar los eventos dentro de la pantalla de opciones
                     self.handle_input(event)
 
-                    # Salir de opciones con ESC y guardar la configuración
+                    # Salir de opciones con ESC y guardar solo el volumen
                     if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                         self.showing_options = False
-                        config.save_settings(self.config)  # Guardar configuración al salir
-        
+                        self.save_config()  # Guardar solo el volumen al salir
+                
                 elif self.showing_skins:
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_ESCAPE:

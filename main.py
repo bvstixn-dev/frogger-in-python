@@ -378,8 +378,42 @@ class Game:
         #print(f"Current score: {self.score}, High score: {self.high_score}") # Verificamos puntaje
         #lives_surface = self.font.render(f"Vidas: {self.lives}", True, (255, 255, 255))
         #self.DISPLAY.blit(lives_surface, (10, 10))
-            
+        
+        # Cargar configuración solo la primera vez
+        if not hasattr(self, 'loaded_high_score'):
+            self.load_config()
+            self.loaded_high_score = True
+
+        # Actualizar y guardar high score si se supera el actual
+        if self.score > self.high_score:
+            self.high_score = self.score
+            self.save_high_score()
     
+    def load_config(self):
+        """Carga el high score y el volumen desde config.json."""
+        try:
+            with open("config.json", "r") as config_file:
+                config = json.load(config_file)
+                self.high_score = config.get("score", 0)
+                self.level_volume = int(config.get("volume", 0.8) * 10)  # Cargar volumen inicial
+        except FileNotFoundError:
+            self.high_score = 0
+            self.level_volume = 8  # Valores predeterminados si no existe el archivo
+    def save_high_score(self):
+        """Guarda el high score actual en config.json sin afectar otras configuraciones."""
+        try:
+            with open("config.json", "r+") as config_file:
+                config = json.load(config_file)
+                config["score"] = self.high_score  # Solo actualizar el high score
+                config_file.seek(0)
+                json.dump(config, config_file)
+                config_file.truncate()  # Limpiar el contenido residual
+            print(f"High score guardado: {self.high_score}")  # Mensaje de verificación
+        except FileNotFoundError:
+            # Si el archivo no existe, crear uno nuevo
+            with open("config.json", "w") as config_file:
+                json.dump({"score": self.high_score, "volume": self.level_volume / 10}, config_file)
+            print("Archivo config.json creado y high score guardado.")
     def lose_life(self):
         """Reduce las vidas y reinicia la posicion de la rana"""
         self.lives -= 1
@@ -390,6 +424,7 @@ class Game:
             self.frog.reset_position()
             self.reset_timer()
             print("Froggy vuelve a su posicion original")
+            
             
             
             
@@ -406,13 +441,14 @@ class Game:
     def game_over(self):
         """Termina el juego y reinicia los valores """
         print("Game over")
+        self.save_high_score()
         self.display_game_over_message()
-        pygame.time.wait(3000) # 3 seg
         
         #Volvemos a incrementar las vidas y reiniciar el puntaje para comenzar de nuevo
         self.lives += 7
         self.score = 0
         self.frog.reset_position()
+        pygame.time.wait(2000) #2seg
         
     def display_game_over_message(self):
         """Dibuja 'game over' en la pantalla"""
