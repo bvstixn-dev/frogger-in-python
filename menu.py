@@ -1,9 +1,10 @@
-import pygame, cv2, sys, time, config
+import pygame, cv2, sys, time, config, json
 import numpy as np
 
 class Menu:
     def __init__(self, screen):
         self.screen = screen
+        
         
         #Cargar fondo del menu
         self.bg_image = pygame.image.load("assets/background.png")#ruta del fondo
@@ -43,9 +44,24 @@ class Menu:
         #variable de volumen
         self.level_volume = int(self.config.get("volume", 5) * 10)
         
+        self.skins = ["default", "red", "purple"]
+        self.current_skin = 0
         
-        
+        self.config = self.load_settings()
     
+    def load_settings(self):
+        # Cargar configuración desde JSON
+        try:
+            with open("config.json") as f:
+                return json.load(f)
+        except FileNotFoundError:
+            return {"volume": 0.2, "skin": "default", "score": 0}
+    
+    def save_settings(self):
+        # Guardar configuración en JSON
+        with open("config.json", "w") as f:
+            json.dump(self.config, f, indent=4)
+
     def play_video_opencv(video_path, screen):
         video = cv2.VideoCapture(video_path)
         
@@ -119,19 +135,30 @@ class Menu:
         pygame.display.flip()
     
     def display_skins(self):
-            # Dibujar el fondo en blanco
+         # Dibujar fondo blanco
         self.screen.fill((255, 255, 255))
         
-        # Escalar la imagen de skins para que ocupe toda la pantalla
-        scaled_skins_image = pygame.transform.scale(self.skins_image, self.screen.get_size())
-        self.screen.blit(scaled_skins_image, (0, 0))  # Ajuste para que ocupe toda la pantalla
+        # Título de "Cambiar Skin"
+        title_text = self.font.render("Cambiar Skin", True, (0, 0, 0))
+        title_rect = title_text.get_rect(center=(self.screen.get_width() // 2, 50))
+        self.screen.blit(title_text, title_rect)
         
-        # Dibujar el botón "X"
-        pygame.draw.rect(self.screen, (255, 0, 0), self.close_button_rect)  # Botón rojo
+        # Mostrar la imagen de la skin seleccionada
+        skin_image = pygame.image.load(f"assets/froggy/{self.skins[self.current_skin]}/up.png")
+        skin_image = pygame.transform.scale(skin_image, (200, 200))
+        self.screen.blit(skin_image, (self.screen.get_width() // 2 - 100, self.screen.get_height() // 2 - 100))
+        
+        # Mostrar botón "X"
+        pygame.draw.rect(self.screen, (255, 0, 0), self.close_button_rect)
         close_font = pygame.font.Font(None, 40)
         close_text = close_font.render('X', True, (255, 255, 255))
         self.screen.blit(close_text, (self.close_button_rect.x + 10, self.close_button_rect.y))
         
+        # Mostrar las opciones de navegación
+        nav_text = self.font.render("Usa izquierda/derecha para cambiar skin", True, (0, 0, 0))
+        nav_rect = nav_text.get_rect(center=(self.screen.get_width() // 2, self.screen.get_height() - 50))
+        self.screen.blit(nav_text, nav_rect)
+
         pygame.display.flip()
     
     def display_options(self):
@@ -205,6 +232,16 @@ class Menu:
                             self.level_volume = min(10, self.level_volume + 1)
                             self.config["volume"] = self.level_volume / 10
                             pygame.mixer.music.set_volume(self.config["volume"])
+                elif self.showing_skins:
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_ESCAPE:
+                            self.showing_skins = False
+                            self.config["skin"] = self.skins[self.current_skin]  # Guardar skin seleccionada en el config
+                            self.save_settings()  # Guardar cambios
+                        elif event.key == pygame.K_LEFT:
+                            self.current_skin = (self.current_skin - 1) % len(self.skins)  # Cambiar a la skin anterior
+                        elif event.key == pygame.K_RIGHT:
+                            self.current_skin = (self.current_skin + 1) % len(self.skins)  # Cambiar a la siguiente skin
                 else:
                     # Interacción con la pantalla de prototipo o skins
                     if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:

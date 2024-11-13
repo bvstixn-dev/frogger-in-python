@@ -2,7 +2,7 @@ import pygame
 from object import *
 #from main import *
 class Frog(Object):
-    def __init__(self, pos, size, image_directory, group, collision_groups, river_speeds, game):
+    def __init__(self, pos, size, skin, group, collision_groups, river_speeds, game):
         """
         Inicializa la rana en el juego
         -------------------------------------------------------------------
@@ -15,6 +15,10 @@ class Frog(Object):
         - river_speed: Velocidades diferentes en el carril del rio
         -------------------------------------------------------------------
         """
+        
+        self.skin = skin  # Guardamos la skin actual de la rana
+        image_directory = f"assets/froggy/{self.skin}/up.png" 
+        
         super().__init__(pos, size, image_directory, group)
         
         self.keyups = [] #Almacena las teclas que han sido soltadas
@@ -25,6 +29,7 @@ class Frog(Object):
         self.game = game #Referencia al juego para manejar las vidas y el puntaje
         self.image = pygame.image.load(image_directory)
         self.image = pygame.transform.scale(self.image, size)  # Escala la imagen al tamaño especificado
+        
         
         
         
@@ -45,7 +50,16 @@ class Frog(Object):
         self.is_dead = False
         self.death_frame = 0
         self.death_timer = 0
-        
+    def change_skin(self, new_skin):
+        """Cambia la skin de la rana al valor especificado."""
+        self.skin = new_skin
+        self.update_skin_images()
+
+    def update_skin_images(self):
+        """Actualiza las imágenes de la rana según la skin seleccionada."""
+        self.image_directory = f"assets/froggy/{self.skin}/up.png"
+        self.setImage()
+       
     def moveFrog(self):
         """
         Mueve la rana segun las teclas precionadas y actualiza su posicion
@@ -58,25 +72,23 @@ class Frog(Object):
         
         #Controles de movimiento
         if pygame.K_UP in self.keyups:
-            self.image_directory = "assets/froggy/up.png"
-            y -= 48 #Mueve hacia arriba
+            self.image_directory = f"assets/froggy/{self.skin}/up.png"
+            y -= 48
             pygame.mixer.Sound.play(self.game.hop_sound)
-        
-        if pygame.K_DOWN in self.keyups:
-            self.image_directory = "assets/froggy/down.png"
-            y += 48 #Mueve hacia abajo
+
+        elif pygame.K_DOWN in self.keyups:
+            self.image_directory = f"assets/froggy/{self.skin}/down.png"
+            y += 48
             pygame.mixer.Sound.play(self.game.hop_sound)
-            
-        
-        if pygame.K_LEFT in self.keyups:
-            self.image_directory = "assets/froggy/left.png"
-            x -= 48 #Movimiento hacia la izquierda
+
+        elif pygame.K_LEFT in self.keyups:
+            self.image_directory = f"assets/froggy/{self.skin}/left.png"
+            x -= 48
             pygame.mixer.Sound.play(self.game.hop_sound)
-            
-       
-        if pygame.K_RIGHT in self.keyups:
-            self.image_directory = "assets/froggy/right.png"
-            x += 48 #Movimiento hacia la derecha
+
+        elif pygame.K_RIGHT in self.keyups:
+            self.image_directory = f"assets/froggy/{self.skin}/right.png"
+            x += 48
             pygame.mixer.Sound.play(self.game.hop_sound)
         
         x += self.x_speed #Aplica la velocidad horizontal
@@ -90,6 +102,12 @@ class Frog(Object):
         #Actualiza la posicion de la rana
         
         self.pos = (x, y)
+    
+    def set_skin(self, new_skin):
+        self.skin = new_skin
+        self.image_directory = f"assets/froggy/{self.skin}/up.png"  # Imagen inicial después del cambio
+        self.setImage()  # Actualiza la imagen del sprite
+    
     
     def reset_position(self):
         """Reinicia la posicion de la rana al inicio"""
@@ -135,7 +153,7 @@ class Frog(Object):
         self.is_dead = True
         self.death_frame = 0
         self.x_speed = 0 #resetea la velocidad horizontal
-        self.image_directory = "assets/froggy/up.png"
+        self.image_directory = f"assets/froggy/{self.skin}/up.png"
         self.setImage() #establece la imagen
         
         

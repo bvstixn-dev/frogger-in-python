@@ -1,4 +1,4 @@
-import pygame, sys, random, config
+import pygame, sys, random, config, json
 from object import *
 from frog import *
 from lane import *
@@ -78,6 +78,10 @@ class Game:
         
         self.level = 1
         
+        
+        with open('config.json') as f:
+            config = json.load(f)
+        self.skin = config.get("skin", "default")
         
         
         
@@ -258,7 +262,7 @@ class Game:
         
         #Inicializamos la rana frogger(posicion inicial(2 argumentos), su tamano, su imagen, su agrupacion de sprites y colisiones)
         #self.frog = Frog((336, 672), (48, 48), "assets/froggy/up.png", self.frog_group, [self.car_group, self.river_group], self.river_speeds, self)
-        self.frog = Frog((312, 672), (48, 48), "assets/froggy/up.png", self.frog_group, [self.car_group, self.river_group], self.river_speeds, self)
+        self.frog = Frog((312, 672), (48, 48), "default", self.frog_group, [self.car_group, self.river_group], self.river_speeds, self)
     
     
     def draw_time_bar(self):
@@ -405,7 +409,7 @@ class Game:
         self.DISPLAY.fill((0, 0, 0))
         self.show_start_game() #Funcion paramostrar texto al iniciar el juego
         
-        
+        self.frog.change_skin(self.skin)
         
         while True:
             #Rellena la pantalla con el color de fondo
