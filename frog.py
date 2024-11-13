@@ -21,7 +21,7 @@ class Frog(Object):
         
         super().__init__(pos, size, image_directory, group)
         
-        self.keyups = [] #Almacena las teclas que han sido soltadas
+        self.keydowns = [] #Almacena las teclas que han sido soltadas
         
         self.collision_groups = collision_groups #Grupos con los que puede colisionar
         self.river_speeds = river_speeds #Velocidades del rio
@@ -71,22 +71,22 @@ class Frog(Object):
         
         
         #Controles de movimiento
-        if pygame.K_UP in self.keyups:
+        if pygame.K_UP in self.keydowns:
             self.image_directory = f"assets/froggy/{self.skin}/up.png"
             y -= 48
             pygame.mixer.Sound.play(self.game.hop_sound)
 
-        elif pygame.K_DOWN in self.keyups:
+        elif pygame.K_DOWN in self.keydowns:
             self.image_directory = f"assets/froggy/{self.skin}/down.png"
             y += 48
             pygame.mixer.Sound.play(self.game.hop_sound)
 
-        elif pygame.K_LEFT in self.keyups:
+        elif pygame.K_LEFT in self.keydowns:
             self.image_directory = f"assets/froggy/{self.skin}/left.png"
             x -= 48
             pygame.mixer.Sound.play(self.game.hop_sound)
 
-        elif pygame.K_RIGHT in self.keyups:
+        elif pygame.K_RIGHT in self.keydowns:
             self.image_directory = f"assets/froggy/{self.skin}/right.png"
             x += 48
             pygame.mixer.Sound.play(self.game.hop_sound)

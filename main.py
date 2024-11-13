@@ -93,15 +93,15 @@ class Game:
             self.DISPLAY.fill(self.screen_color)
             
             #Movimiento de la rana segun la tecla presionada
-            self.frog.keyups = []
+            self.frog.keydowns = []
             
             #Manejo de eventos (cerrar ventana, teclas presionadas)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
-                elif event.type == pygame.KEYUP:
-                    self.frog.keyups.append(event.key) # Almacena las teclas que se sueltan
+                elif event.type == pygame.KEYDOWN:
+                    self.frog.keydowns.append(event.key) # Almacena las teclas que se sueltan
             
             #Actualiza y dibuja todos los grupos de sprites
             for group in self.all_group:
