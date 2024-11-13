@@ -43,7 +43,6 @@ class Game:
             "street": [-2.25, -2, 1.75, 3 ,4.25],
             "river": [-1.5, -1.25, 2.25, 2.5]
         }
-
         
         
         #iconos
@@ -54,7 +53,6 @@ class Game:
         self.time_limit = 30 #limite x seg
         self.time_left = self.time_limit #tiempo restante
         self.start_time = pygame.time.get_ticks() # inicio del cronometro
-        
         
         
         #Iniciarlizar vidas y puntaje
@@ -78,14 +76,51 @@ class Game:
         
         self.level = 1
         
-        
         with open('config.json') as f:
             config = json.load(f)
         self.skin = config.get("skin", "default")
         
         
+    def run(self):
+        """Bucle principal del juego, maneja los eventos de entrada, actualiza los objetos y refresca la pantalla"""
+        self.DISPLAY.fill((0, 0, 0))
+        self.show_start_game() #Funcion paramostrar texto al iniciar el juego
         
+        self.frog.change_skin(self.skin)
         
+        while True:
+            #Rellena la pantalla con el color de fondo
+            self.DISPLAY.fill(self.screen_color)
+            
+            #Movimiento de la rana segun la tecla presionada
+            self.frog.keyups = []
+            
+            #Manejo de eventos (cerrar ventana, teclas presionadas)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == pygame.KEYUP:
+                    self.frog.keyups.append(event.key) # Almacena las teclas que se sueltan
+            
+            #Actualiza y dibuja todos los grupos de sprites
+            for group in self.all_group:
+                for sprite in group:
+                    sprite.update()
+                group.draw(self.DISPLAY)
+            
+            
+            clock = pygame.time.Clock()
+            fps = 60
+            clock.tick(fps)
+            #Mostrar HUD
+            
+            self.displayHUD()
+            self.update_timer()
+            self.draw_time_bar()
+            
+            #Refresa la pantalla con nuevos dibujos
+            pygame.display.update()
         
     
     def load_sounds(self):
@@ -95,9 +130,6 @@ class Game:
         
         #volumen
         pygame.mixer.music.set_volume(0.3)
-        
-        
-        
         
         
         self.hop_sound = pygame.mixer.Sound("assets/music/sounds/Hop.ogg")
@@ -236,12 +268,6 @@ class Game:
         #Hueco
         Object((592, 72), (80, 72), "assets/grass/hueco.png", self.object_group)  
         
-        
-            
-        
-        
-        
-        
         #Carriles del rio
         for y in range(5):
             y_pos = y*48 + 144
@@ -250,7 +276,7 @@ class Game:
             new_lane = Lane((0, y_pos), self.river_group, speed, "river")
             self.river_speeds[y_pos // 48] = new_lane.speed
             
-            #possible error
+        
         
         #Carriles de la calle
         for y in range(5):
@@ -260,13 +286,11 @@ class Game:
             
             Lane((0, y_pos), self.car_group, speed, "street")
         
-        #Inicializamos la rana frogger(posicion inicial(2 argumentos), su tamano, su imagen, su agrupacion de sprites y colisiones)
-        #self.frog = Frog((336, 672), (48, 48), "assets/froggy/up.png", self.frog_group, [self.car_group, self.river_group], self.river_speeds, self)
+        #Inicializamos la rana frogger(posicion inicial(2 argumentos), su tamano, su imagen, su agrupacion de sprites y colisiones
         self.frog = Frog((312, 672), (48, 48), "default", self.frog_group, [self.car_group, self.river_group], self.river_speeds, self)
     
     
     def draw_time_bar(self):
-        """Dibuja la barra de tiempo en la parte inferior de la pantalla, que se reduce con el tiempo."""
         # Calcular el porcentaje del tiempo restante
         time_ratio = max(0, self.time_left / self.time_limit)  # Aseguramos que nunca sea negativo
 
@@ -279,9 +303,6 @@ class Game:
         x_pos = self.DISPLAY.get_width() - width - 70  #10 px de margen desde la derecha
         y_pos = self.DISPLAY.get_height() - height - 10  #10 px de margen desde el fondo
 
-        # Dibujar el fondo de la barra (en rojo)
-        #pygame.draw.rect(self.DISPLAY, (255, 0, 0), (x_pos, y_pos, width, height))
-
         if self.time_left <= 10:
             bar_color = (255, 0, 0)
             if not self.warning_sound_played:
@@ -292,14 +313,12 @@ class Game:
             bar_color = (0, 255, 0)
             self.warning_sound_played = False  # Restablece la variable cuando se sale de la condición
             
-        
         # Dibujar la parte restante de la barra (en verde)
         pygame.draw.rect(self.DISPLAY, bar_color, (x_pos + (width - current_width), y_pos, current_width, height))
         
         #Cargar y reescalar el icono
         time_icon = pygame.image.load("assets/icons/time.png")
         time_icon = pygame.transform.scale(time_icon, (55, 20))
-        
         
         #Dibujar en pantalla
         self.DISPLAY.blit(time_icon, (x_pos + 305, y_pos ))
@@ -319,7 +338,6 @@ class Game:
         
     def reset_timer(self):
         """Reinicia el temporizador"""
-        
         #Ojo con esta linea, creo que es innecesaria
         self.time_left = self.time_limit
         self.start_time = pygame.time.get_ticks()
@@ -337,7 +355,6 @@ class Game:
         pygame.display.update()
         
         pygame.time.delay(1500) # 1.5 seg
-    
 
     def displayHUD(self):
         """Muestra las vidas, el puntaje y el maximo en la pantalla"""
@@ -349,8 +366,6 @@ class Game:
         
         high_score_surface = self.font.render(f"HI-SCORE", True, (255, 255, 255))
         high_score_num_surface = self.font.render(f"{str(self.high_score).zfill(5)}", True, (255, 0, 0))
-        
-        
         
         #Dibujar hud (var, pos (x, y))
         self.DISPLAY.blit(score_surface, (100,10))
@@ -404,50 +419,7 @@ class Game:
         game_over_surface = self.font.render("Game Over", True, (255, 0, 0))
         self.DISPLAY.blit(game_over_surface, (240, 397))
         pygame.display.update()
-    def run(self):
-        """Bucle principal del juego, maneja los eventos de entrada, actualiza los objetos y refresca la pantalla"""
-        self.DISPLAY.fill((0, 0, 0))
-        self.show_start_game() #Funcion paramostrar texto al iniciar el juego
-        
-        self.frog.change_skin(self.skin)
-        
-        while True:
-            #Rellena la pantalla con el color de fondo
-            self.DISPLAY.fill(self.screen_color)
-            
-            #Movimiento de la rana segun la tecla presionada
-            self.frog.keyups = []
-            
-            
-            
-            
-            #Manejo de eventos (cerrar ventana, teclas presionadas)
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
-                elif event.type == pygame.KEYUP:
-                    self.frog.keyups.append(event.key) # Almacena las teclas que se sueltan
-            
-            #Actualiza y dibuja todos los grupos de sprites
-            for group in self.all_group:
-                for sprite in group:
-                    sprite.update()
-                group.draw(self.DISPLAY)
-            
-            
-            clock = pygame.time.Clock()
-            fps = 60
-            clock.tick(fps)
-            #Mostrar HUD
-            
-            self.displayHUD()
-            self.update_timer()
-            self.draw_time_bar()
-            
-            #Refresa la pantalla con nuevos dibujos
-            pygame.display.update()
-        
+    
 
 
 
