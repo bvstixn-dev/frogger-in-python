@@ -57,11 +57,9 @@ class Game:
         self.high_score = 0
         self.font = pygame.font.Font("assets/fonts/PressStart2P.ttf", 25)
         
-        #Cargamos el sonido
-        self.load_sounds()
         
         #Configuracion inicial de los objetos del juego
-        self.assetSetup()
+        
         
         #cordenada de los huecos
         self.holes = [(26, 96),(174, 96),(322, 96),(468, 96),(606, 96)]
@@ -77,13 +75,17 @@ class Game:
         self.skin = config.get("skin", "default")
         self.warning_sound_played = False
         
+        self.volume = config.get("volume", 0.2)
+        #Cargamos el sonido
+        self.load_sounds()
+        self.assetSetup()
+        
     def run(self):
         """Bucle principal del juego, maneja los eventos de entrada, actualiza los objetos y refresca la pantalla"""
         self.DISPLAY.fill((0, 0, 0))
         self.show_start_game() #Funcion paramostrar texto al iniciar el juego
         
         self.frog.change_skin(self.skin)
-        
         while True:
             #Rellena la pantalla con el color de fondo
             self.DISPLAY.fill(self.screen_color)
@@ -97,6 +99,7 @@ class Game:
                     pygame.quit()
                     sys.exit()
                 elif event.type == pygame.KEYDOWN:
+                    
                     self.frog.keydowns.append(event.key) # Almacena las teclas que se sueltan
             
             #Actualiza y dibuja todos los grupos de sprites
@@ -110,7 +113,6 @@ class Game:
             fps = 60
             clock.tick(fps)
             #Mostrar HUD
-            
             self.displayHUD()
             self.update_timer()
             self.draw_time_bar()
@@ -121,26 +123,30 @@ class Game:
     
     def load_sounds(self):
         """Carga la musica"""
-        main_theme = pygame.mixer.music.load("assets/music/sounds/MainTheme.ogg")
+        pygame.mixer.music.load("assets/music/sounds/MainTheme.ogg")
         pygame.mixer.music.play(-1) #La musica se repite en bucle
-        
-        #volumen
-        pygame.mixer.music.set_volume(0.3)
-        
+        pygame.mixer.music.set_volume(self.volume)
+
         
         self.hop_sound = pygame.mixer.Sound("assets/music/sounds/Hop.ogg")
+        self.hop_sound.set_volume(self.volume)
         self.drown_sound = pygame.mixer.Sound("assets/music/sounds/Drown.ogg")
+        self.drown_sound.set_volume(self.volume)
         self.die_land_sound = pygame.mixer.Sound("assets/music/sounds/Die-on-Land.ogg")
+        self.die_land_sound.set_volume(self.volume)
         self.success_sound = pygame.mixer.Sound("assets/music/sounds/credit.ogg")
+        self.success_sound.set_volume(self.volume)
         self.fail_sound = pygame.mixer.Sound("assets/music/sounds/fail_sound.ogg")
+        self.fail_sound.set_volume(self.volume)
         self.warning_sound = pygame.mixer.Sound("assets/music/sounds/warning_sound.ogg")
+        self.warning_sound.set_volume(self.volume)
+    
     def reset_holes(self):
         #Limpiar huecos ocupados
         self.occupied_holes.clear() 
         #actualiza la pantalla
         self.reset_holes_graphics() 
         
-    
     def reset_holes_graphics(self):
         for hole in self.holes:
             for obj in self.object_group:  
@@ -188,6 +194,7 @@ class Game:
                     #Incremento de score
                     self.increase_score(100)
                     
+                    
                     self.level += 1
                     
                     #Marcar como ocupado
@@ -215,20 +222,26 @@ class Game:
     
     def increase_live(self):
         self.lives + 1
-        
+    
+    def adjust_speed(self):
+        """
+        Ajusta las velocidades de los obstáculos en función del nivel, añadiendo una variación aleatoria.
+        """
+        base_speeds = [-1.5, -1.2, -1.0, -0.8, -0.6, 4.0, 4.5, 5.0, 5.5, 6.0]
+        speed_multiplier = 1 + (self.level * 0.5)  # Incremento gradual con el nivel
+        random.shuffle(base_speeds)  # Desordena para variación aleatoria
+        print(base_speeds)
+        return [speed * speed_multiplier for speed in base_speeds]
     
     def assetSetup(self, level=1):
         """
         Configura los objectos iniciales, incluyendo el fondo, el pasto y los autos
         """
         
-        speed_multiplier = 1 + (level * 0.1)
+         # Obtiene velocidades ajustadas para los obstáculos
+        speeds = self.adjust_speed()
         
-        #Velocidades aleatorias para los autos y rio
-        
-        speeds = [-2.25, -2, -1.75, -1.5, -1.25, 7.25, 8.5, 9.75, 9, 9.25] * 2
-        random.shuffle(speeds)
-        
+        print(speeds)
         #Fondo/Background
         Object((0,0), (672, 768), "assets/background.png", self.object_group)
         
@@ -267,17 +280,18 @@ class Game:
         #Carriles del rio
         for y in range(5):
             y_pos = y*48 + 144
-            speed = speeds.pop() * speed_multiplier
+            speed = speeds.pop() 
             #Objeto del carril
             new_lane = Lane((0, y_pos), self.river_group, speed, "river")
             self.river_speeds[y_pos // 48] = new_lane.speed
+            
             
         
         
         #Carriles de la calle
         for y in range(5):
             y_pos = y*48 + 432
-            speed = speeds.pop() * speed_multiplier
+            speed = speeds.pop() 
             
             
             Lane((0, y_pos), self.car_group, speed, "street")
@@ -391,7 +405,7 @@ class Game:
             with open("config.json", "r") as config_file:
                 config = json.load(config_file)
                 self.high_score = config.get("score", 0)
-                self.level_volume = int(config.get("volume", 0.8) * 10)  # Cargar volumen inicial
+                self.level_volume = int(config.get("volume", 0.5) * 10)  # Cargar volumen inicial
         except FileNotFoundError:
             self.high_score = 0
             self.level_volume = 8  # Valores predeterminados si no existe el archivo

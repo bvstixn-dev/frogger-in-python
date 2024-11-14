@@ -40,7 +40,7 @@ class Lane:
         #Configura los obstaculos dependiendo del tipo de carril
         if self.lane_type == "street":
             # Selecciona una imagen del coche aleatorio
-            car = random.randint(1,3)
+            car = random.randint(1,2)
             image_directory = f"assets/{self.lane_type}/{self.direction}/{car}.png"
             
             #Crea tres coches en posiciones fijas en el carril

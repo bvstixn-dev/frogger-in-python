@@ -1,5 +1,7 @@
 import pygame, cv2, sys, time, config, json
 import numpy as np
+from main import Game
+
 
 class Menu:
     def __init__(self, screen):
@@ -43,11 +45,13 @@ class Menu:
         #variable de volumen
         self.level_volume = int(self.config.get("volume", 5) * 10)
         
-        self.skins = ["default", "red", "purple"]
+        self.skins = ["default", "red", "purple", "yellow", "orange", "white", "blue"]
         self.current_skin = 0
         
         self.config = self.load_settings()
         self.option_index = 0
+        
+        
     
     def load_settings(self):
         # Cargar configuración desde JSON
@@ -177,6 +181,8 @@ class Menu:
     
     def run(self):
         while True:
+            
+            
             if self.showing_skins:
                 self.display_skins()  # Mostrar pantalla de skins (como tienes implementado)
             elif self.showing_options:
