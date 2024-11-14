@@ -94,6 +94,7 @@ class Frog(Object):
         x += self.x_speed #Aplica la velocidad horizontal
         
         
+        
         #Verifica los limites de la pantalla y mata a la rana si sale
         if x <= -48 or x > 48*14 or y > 48*16:
             pygame.mixer.Sound.play(self.game.fail_sound)
@@ -135,6 +136,7 @@ class Frog(Object):
         lane = self.pos[1] // 48 #Determina en que carril se encuentra la rana
         
         
+               
         if collided:
             if lane < 8: #Si esta en una lane de rio
                 self.x_speed = self.river_speeds[lane] #Establece la velocidad del rio
