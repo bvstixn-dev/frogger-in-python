@@ -39,10 +39,6 @@ class Game:
         #Diccionario para almacenar las velocidades de las lineas del rio
         self.river_speeds = {}
         
-        self.base_speeds = {
-            "street": [-2.25, -2, 1.75, 3 ,4.25],
-            "river": [-1.5, -1.25, 2.25, 2.5]
-        }
         
         
         #iconos
@@ -79,7 +75,7 @@ class Game:
         with open('config.json') as f:
             config = json.load(f)
         self.skin = config.get("skin", "default")
-        
+        self.warning_sound_played = False
         
     def run(self):
         """Bucle principal del juego, maneja los eventos de entrada, actualiza los objetos y refresca la pantalla"""
@@ -230,7 +226,7 @@ class Game:
         
         #Velocidades aleatorias para los autos y rio
         
-        speeds = [-2.25, -2, -1.75, -1.5, -1.25, 2.25, 2.5, 3.75, 4, 4.25] * 2
+        speeds = [-2.25, -2, -1.75, -1.5, -1.25, 7.25, 8.5, 9.75, 9, 9.25] * 2
         random.shuffle(speeds)
         
         #Fondo/Background
